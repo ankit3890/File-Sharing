@@ -27,6 +27,11 @@ app.use('/api/projects', require('./routes/projectRoutes'));
 app.use('/api/files', require('./routes/fileRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
 
+// Health Check
+app.get('/', (req, res) => {
+    res.send('API is running successfully.');
+});
+
 // Error Handling Middleware
 app.use((err, req, res, next) => {
     console.error(err.stack);
