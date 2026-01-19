@@ -7,6 +7,11 @@ const api = axios.create({
     }
 });
 
+console.log('--- API CONFIG ---');
+console.log('Base URL:', api.defaults.baseURL);
+console.log('Environment:', import.meta.env.MODE);
+console.log('------------------');
+
 // Add Token to requests
 api.interceptors.request.use(config => {
     const token = localStorage.getItem('token');
