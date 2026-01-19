@@ -1,0 +1,275 @@
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+import api from '../utils/api';
+import UploadModal from '../components/UploadModal';
+import FilePreviewModal from '../components/FilePreviewModal';
+import MembersPanel from '../components/MembersPanel';
+import { File, MoreVertical, Trash2, Eye, Download, Edit2, UploadCloud, Clock, HardDrive, Shield, Search, X } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { motion } from 'framer-motion';
+
+const ProjectView = () => {
+    const { id } = useParams();
+    const { user, refreshUser } = useAuth();
+    const [project, setProject] = useState(null);
+    const [files, setFiles] = useState([]);
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [isUploadOpen, setIsUploadOpen] = useState(false);
+    const [loading, setLoading] = useState(true);
+    
+    // New State for Search and Filters
+    const [fileSearch, setFileSearch] = useState('');
+    const [selectedMember, setSelectedMember] = useState(null);
+
+    useEffect(() => {
+        fetchProjectData();
+    }, [id]);
+
+    const fetchProjectData = async () => {
+        try {
+            setLoading(true);
+            const [projectRes, filesRes] = await Promise.all([
+                api.get(`/projects/${id}`),
+                api.get(`/files/project/${id}`)
+            ]);
+            setProject(projectRes.data);
+            setFiles(filesRes.data);
+        } catch (error) {
+            console.error('Failed to fetch project data:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleUploadComplete = () => {
+        fetchProjectData();
+        refreshUser();
+    };
+
+    const handleDelete = async (fileId) => {
+        if (window.confirm('Delete this file?')) {
+            try {
+                await api.delete(`/files/${fileId}`);
+                fetchProjectData();
+                refreshUser();
+            } catch (error) {
+                alert('Delete failed');
+            }
+        }
+    };
+
+    const handleEdit = async (file) => {
+        const newDesc = prompt('Enter new description:', file.description);
+        if (newDesc !== null && newDesc !== file.description) {
+            try {
+                await api.put(`/files/${file._id}`, { description: newDesc });
+                fetchProjectData();
+            } catch (error) {
+                alert('Update failed');
+            }
+        }
+    };
+
+    const handleDownload = async (fileId, fileName) => {
+        try {
+            const res = await api.get(`/files/${fileId}/download_token`);
+            const { token } = res.data;
+            window.location.href = `${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/files/download/${token}`;
+        } catch (error) {
+            console.error('Download failed:', error);
+            alert('Could not download file.');
+        }
+    };
+
+    const handleMemberSelect = (member) => {
+        if (selectedMember?._id === member._id) {
+            setSelectedMember(null); // Deselect
+        } else {
+            setSelectedMember(member);
+        }
+    };
+
+    // Filter Logic
+    const visibleFiles = files.filter(f => {
+        // 1. Soft Delete Check
+        const isDeletedVisible = !f.deletedByAdmin || user.role === 'admin';
+        // 2. Search Text Check
+        const matchesSearch = f.originalName.toLowerCase().includes(fileSearch.toLowerCase());
+        // 3. Member Filter Check
+        const matchesMember = selectedMember ? (f.uploader?._id === selectedMember._id) : true;
+        
+        return isDeletedVisible && matchesSearch && matchesMember;
+    });
+
+    if (loading) return <div className="p-8 text-center">Loading Project...</div>;
+    if (!project) return <div className="p-8 text-center">Project not found</div>;
+
+    return (
+        <div style={{ padding: '1rem', height: 'calc(100vh - 100px)', display: 'flex', flexDirection: 'column' }}>
+            {/* Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                <div>
+                    <h1 style={{ fontSize: '2rem', fontWeight: 'bold' }}>{project.name}</h1>
+                    <p style={{ color: '#94a3b8' }}>{project.description || 'No description'}</p>
+                </div>
+                <button 
+                    onClick={() => setIsUploadOpen(true)} 
+                    className="btn btn-primary"
+                    style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1.5rem', borderRadius: '0.75rem' }}
+                >
+                    <UploadCloud size={20} /> Upload File
+                </button>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '3fr 1fr', gap: '1.5rem', flex: 1, overflow: 'hidden' }}>
+                
+                {/* File List (Vertical) */}
+                <div className="glass" style={{ borderRadius: '1rem', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+                    
+                    {/* Search and Filter Bar */}
+                    <div style={{ padding: '1rem', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                         <div style={{ position: 'relative', flex: 1 }}>
+                            <Search size={18} style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+                            <input 
+                                type="text" 
+                                placeholder="Search files by name..." 
+                                value={fileSearch}
+                                onChange={(e) => setFileSearch(e.target.value)}
+                                style={{ 
+                                    width: '100%', 
+                                    padding: '0.6rem 0.6rem 0.6rem 2.5rem', 
+                                    borderRadius: '0.5rem', 
+                                    border: '1px solid rgba(255,255,255,0.1)', 
+                                    background: 'rgba(0,0,0,0.2)', 
+                                    color: 'white' 
+                                }}
+                            />
+                        </div>
+                        {selectedMember && (
+                            <div style={{ 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                gap: '0.5rem', 
+                                background: 'rgba(59, 130, 246, 0.2)', 
+                                padding: '0.4rem 0.8rem', 
+                                borderRadius: '2rem', 
+                                border: '1px solid rgba(59, 130, 246, 0.4)',
+                                fontSize: '0.85rem'
+                            }}>
+                                <span>Filtered by: <strong>{selectedMember.userId}</strong></span>
+                                <button 
+                                    onClick={() => setSelectedMember(null)}
+                                    style={{ background: 'none', border: 'none', color: '#60a5fa', cursor: 'pointer', display: 'flex' }}
+                                >
+                                    <X size={14} />
+                                </button>
+                            </div>
+                        )}
+                    </div>
+
+                    <div style={{ padding: '0.75rem 1rem', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'grid', gridTemplateColumns: 'minmax(40px, auto) 2fr 1fr 1fr 1fr', gap: '1rem', color: '#94a3b8', fontSize: '0.85rem', fontWeight: 600 }}>
+                        <span>Type</span>
+                        <span>Name</span>
+                        <span>Size / Date</span>
+                        <span>Uploader</span>
+                        <span style={{ textAlign: 'right' }}>Actions</span>
+                    </div>
+                    
+                    <div style={{ overflowY: 'auto', flex: 1 }}>
+                        {visibleFiles.length === 0 ? (
+                            <p style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>
+                                {files.length === 0 ? 'No files uploaded yet.' : 'No matching files found.'}
+                            </p>
+                        ) : (
+                            visibleFiles.map(file => (
+                                <motion.div 
+                                    key={file._id} 
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: file.deletedByAdmin ? 0.6 : 1 }}
+                                    className="file-row"
+                                    style={{ 
+                                        display: 'grid', 
+                                        gridTemplateColumns: 'minmax(40px, auto) 2fr 1fr 1fr 1fr', 
+                                        gap: '1rem', 
+                                        padding: '1rem', 
+                                        borderBottom: '1px solid rgba(255,255,255,0.03)',
+                                        alignItems: 'center',
+                                        background: file.deletedByAdmin ? 'rgba(239, 68, 68, 0.05)' : 'transparent',
+                                    }}
+                                >
+                                    <div style={{ display: 'flex', justifyContent: 'center' }}>
+                                        <File size={24} style={{ color: '#94a3b8' }} />
+                                    </div>
+                                    
+                                    <div style={{ minWidth: 0 }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                            <p style={{ fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={file.originalName}>
+                                                {file.originalName}
+                                            </p>
+                                            {file.deletedByAdmin && (
+                                                <span style={{ fontSize: '0.65rem', background: '#ef4444', color: 'white', padding: '0.1rem 0.4rem', borderRadius: '4px' }}>DELETED</span>
+                                            )}
+                                        </div>
+                                        {file.description && <p style={{ fontSize: '0.75rem', color: '#64748b' }}>{file.description}</p>}
+                                    </div>
+
+                                    <div>
+                                        <p style={{ fontSize: '0.85rem' }}>{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                                        <p style={{ fontSize: '0.75rem', color: '#64748b' }}>{new Date(file.uploadedAt).toLocaleDateString()}</p>
+                                    </div>
+
+                                    <div style={{ fontSize: '0.9rem', color: '#cbd5e1' }}>
+                                        {file.uploader?.userId}
+                                    </div>
+
+                                    <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                                        {!file.deletedByAdmin && (
+                                            <>
+                                                <button onClick={() => setSelectedFile(file)} className="btn-icon" title="Preview"><Eye size={18} /></button>
+                                                <button onClick={() => handleDownload(file._id, file.originalName)} className="btn-icon" title="Download"><Download size={18} /></button>
+                                            </>
+                                        )}
+                                        
+                                        {(user.role === 'admin' || (user._id === file.uploader?._id && !file.deletedByAdmin)) && (
+                                            <>
+                                                {!file.deletedByAdmin && (
+                                                    <button onClick={() => handleEdit(file)} className="btn-icon" title="Edit"><Edit2 size={18} /></button>
+                                                )}
+                                                <button onClick={() => handleDelete(file._id)} className="btn-icon" style={{ color: '#ef4444' }} title="Delete"><Trash2 size={18} /></button>
+                                            </>
+                                        )}
+                                    </div>
+                                </motion.div>
+                            ))
+                        )}
+                    </div>
+                </div>
+
+                {/* Members Sidebar */}
+                <MembersPanel 
+                    members={project.members} 
+                    onMemberSelect={handleMemberSelect}
+                    selectedMemberId={selectedMember?._id}
+                />
+
+            </div>
+
+            <UploadModal 
+                isOpen={isUploadOpen} 
+                onClose={() => setIsUploadOpen(false)} 
+                projectId={id} 
+                onUploadComplete={handleUploadComplete} 
+            />
+
+            {selectedFile && <FilePreviewModal file={selectedFile} onClose={() => setSelectedFile(null)} />}
+            
+            <style>{`
+                .file-row:hover { background: rgba(255,255,255,0.03) !important; }
+                .btn-icon { background: none; border: none; color: #94a3b8; cursor: pointer; padding: 4px; border-radius: 4px; transition: all 0.2s; }
+                .btn-icon:hover { color: white; background: rgba(255,255,255,0.1); }
+            `}</style>
+        </div>
+    );
+};
+
+export default ProjectView;
