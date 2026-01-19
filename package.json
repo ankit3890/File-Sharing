@@ -3,11 +3,16 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "setup": "npm install && npm install --prefix client && npm install --prefix api",
-    "dev": "concurrently -n \"SERVER,CLIENT\" -c \"bgBlue.bold,bgMagenta.bold\" \"npm run dev --prefix api\" \"npm run dev --prefix client\"",
-    "start": "npm start --prefix api",
+    "setup": "npm install && npm install --prefix client && npm install --prefix backend",
+    "dev": "concurrently -n \"SERVER,CLIENT\" -c \"bgBlue.bold,bgMagenta.bold\" \"npm run dev --prefix backend\" \"npm run dev --prefix client\"",
+    "start": "npm start --prefix backend",
     "build": "npm run build --prefix client"
   },
+  "workspaces": [
+    "client",
+    "backend"
+  ],
+  "dependencies": {},
   "devDependencies": {
     "concurrently": "^8.2.2"
   }
