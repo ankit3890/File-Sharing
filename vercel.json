@@ -1,4 +1,9 @@
 {
+    "functions": {
+        "server/index.js": {
+            "maxDuration": 10
+        }
+    },
     "rewrites": [
         { "source": "/api/(.*)", "destination": "/server/index.js" },
         { "source": "/(.*)", "destination": "/index.html" }
