@@ -55,7 +55,7 @@ const FilePreviewModal = ({ file, onClose }) => {
             const resToken = await api.get(`/files/${file._id}/download_token`);
             const token = resToken.data.token;
             // Trigger download via window
-            window.location.href = `http://localhost:5000/api/files/download/${token}`;
+            window.location.href = `/api/files/download/${token}`;
         } catch (error) {
             alert('Download failed');
         }

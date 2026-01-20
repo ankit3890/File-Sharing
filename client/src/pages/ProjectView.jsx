@@ -74,7 +74,7 @@ const ProjectView = () => {
         try {
             const res = await api.get(`/files/${fileId}/download_token`);
             const { token } = res.data;
-            window.location.href = `${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/files/download/${token}`;
+            window.location.href = `/api/files/download/${token}`;
         } catch (error) {
             console.error('Download failed:', error);
             alert('Could not download file.');
