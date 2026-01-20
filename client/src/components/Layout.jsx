@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import ResetPasswordModal from './ResetPasswordModal';
 import AboutModal from './AboutModal';
-import { LayoutDashboard, Users, FileText, Settings, LogOut, Menu, Info } from 'lucide-react';
+import { LayoutDashboard, Users, FileText, Settings, LogOut, Menu, Info, CalendarCheck } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const Layout = () => {
@@ -51,8 +50,6 @@ const Layout = () => {
 
     return (
         <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg-dark)' }}>
-            {/* Force Password Reset Overlay */}
-            {user.mustChangePassword && <ResetPasswordModal user={user} />}
             <AboutModal isOpen={showAbout} onClose={() => setShowAbout(false)} />
 
             {/* Sidebar Overlay for Mobile */}
@@ -94,6 +91,14 @@ const Layout = () => {
                     <NavLink to="/manage-space" className={navItemClass} style={navItemStyle} title="Manage Space" onClick={handleNavClick}>
                         <Settings size={20} /> 
                         <span>Manage Space</span>
+                    </NavLink>
+
+                    <NavLink to="/attendance" className={navItemClass} style={navItemStyle} title="Attendance" onClick={handleNavClick}>
+                        <CalendarCheck size={20} /> 
+                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                            <span>Attendance</span>
+                            <span style={{ fontSize: '0.65rem', color: '#64748b' }}>Track and manage daily attendance</span>
+                        </div>
                     </NavLink>
 
                     {user.role === 'admin' && (

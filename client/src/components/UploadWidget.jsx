@@ -39,14 +39,35 @@ const UploadWidget = ({ projectId, onUploadComplete, initialFile }) => {
         e.stopPropagation();
         setDragActive(false);
         if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-            setSelectedFile(e.dataTransfer.files[0]);
+            const file = e.dataTransfer.files[0];
+            if (file.size > 15 * 1024 * 1024) {
+                setAlertState({ 
+                    isOpen: true, 
+                    title: 'File Too Large', 
+                    message: `This file is ${formatBytes(file.size)}. The maximum allowed size is 15.00 MB.`, 
+                    type: 'error' 
+                });
+                return;
+            }
+            setSelectedFile(file);
         }
     };
 
     const handleChange = (e) => {
         e.preventDefault();
         if (e.target.files && e.target.files[0]) {
-            setSelectedFile(e.target.files[0]);
+            const file = e.target.files[0];
+            if (file.size > 15 * 1024 * 1024) {
+                setAlertState({ 
+                    isOpen: true, 
+                    title: 'File Too Large', 
+                    message: `This file is ${formatBytes(file.size)}. The maximum allowed size is 15.00 MB.`, 
+                    type: 'error' 
+                });
+                if (inputRef.current) inputRef.current.value = '';
+                return;
+            }
+            setSelectedFile(file);
         }
     };
 
@@ -101,10 +122,23 @@ const UploadWidget = ({ projectId, onUploadComplete, initialFile }) => {
             setSelectedFile(null);
             setDescription('');
         } catch (error) {
+            console.error('[UPLOAD_ERROR]', error);
+            
+            let errorMessage = 'Failed to upload file. Please check storage limits or file size.';
+            let errorTitle = 'Upload Failed';
+
+            // Specific check for Vercel/Server payload limits (413 Payload Too Large)
+            if (error.response?.status === 413) {
+                errorTitle = 'File Too Large (Platform Limit)';
+                errorMessage = `Vercel rejected this upload (${formatBytes(selectedFile.size)}) because it exceeds the platform's payload limit (including overhead). Try a smaller file (< 14MB) or compress it.`;
+            } else if (error.response?.data?.message) {
+                errorMessage = error.response.data.message;
+            }
+
             setAlertState({ 
                 isOpen: true, 
-                title: 'Upload Failed', 
-                message: error.response?.data?.message || 'Failed to upload file. Please check storage limits or file size (Max 15MB).', 
+                title: errorTitle, 
+                message: errorMessage, 
                 type: 'error' 
             });
         } finally {
@@ -154,7 +188,12 @@ const UploadWidget = ({ projectId, onUploadComplete, initialFile }) => {
                         </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
                             <p style={{ fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{selectedFile.name}</p>
-                            <p style={{ fontSize: '0.8rem', color: '#94a3b8' }}>{(selectedFile.size / 1024 / 1024).toFixed(2)} MB</p>
+                            <p style={{ fontSize: '0.8rem', color: selectedFile.size > 14 * 1024 * 1024 ? '#f59e0b' : '#94a3b8', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                {formatBytes(selectedFile.size)}
+                                {selectedFile.size > 14 * 1024 * 1024 && (
+                                    <span title="This file is close to Vercel's 15MB limit and might be rejected due to upload overhead." style={{ cursor: 'help' }}>⚠️ Risky</span>
+                                )}
+                            </p>
                         </div>
                         <button onClick={handleCancel} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '0.5rem' }}>
                             <X size={20} />

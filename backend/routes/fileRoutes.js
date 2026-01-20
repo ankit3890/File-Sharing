@@ -9,7 +9,7 @@ const logger = require('../middleware/logger');
 const storage = multer.memoryStorage();
 const upload = multer({ 
     storage: storage,
-    limits: { fileSize: 15 * 1024 * 1024 } // 15MB limit per file
+    limits: { fileSize: 15 * 1024 * 1024 } // 15MB app limit (Vercel Pro max is 15MB including overhead)
 });
 
 // Routes

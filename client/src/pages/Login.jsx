@@ -30,7 +30,11 @@ const Login = () => {
                 localStorage.removeItem('savedUserId');
             }
 
-            navigate('/dashboard');
+            if (userData.mustChangePassword) {
+                navigate('/reset-password');
+            } else {
+                navigate('/dashboard');
+            }
         } catch (err) {
             setError(err.response?.data?.message || 'Login failed');
         }

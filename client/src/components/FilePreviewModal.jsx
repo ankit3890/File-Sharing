@@ -3,11 +3,13 @@ import { X, Download, FileText } from 'lucide-react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import api from '../utils/api';
+import AlertModal from './AlertModal';
 
 const FilePreviewModal = ({ file, onClose }) => {
     const [content, setContent] = useState(null);
     const [loading, setLoading] = useState(true);
     const [previewUrl, setPreviewUrl] = useState(null);
+    const [alertState, setAlertState] = useState({ isOpen: false, title: '', message: '', type: 'error' });
 
     useEffect(() => {
         if (file) {
@@ -57,7 +59,12 @@ const FilePreviewModal = ({ file, onClose }) => {
             // Trigger download via window
             window.location.href = `/api/files/download/${token}`;
         } catch (error) {
-            alert('Download failed');
+            setAlertState({
+                isOpen: true,
+                title: 'Download Failed',
+                message: 'Failed to initiate download.',
+                type: 'error'
+            });
         }
     };
 
@@ -116,6 +123,13 @@ const FilePreviewModal = ({ file, onClose }) => {
             <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem', overflow: 'hidden' }}>
                 {renderContent()}
             </div>
+            <AlertModal 
+                isOpen={alertState.isOpen}
+                onClose={() => setAlertState(prev => ({ ...prev, isOpen: false }))}
+                title={alertState.title}
+                message={alertState.message}
+                type={alertState.type}
+            />
         </div>
     );
 };

@@ -30,6 +30,7 @@ app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/projects', require('./routes/projectRoutes'));
 app.use('/api/files', require('./routes/fileRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
+app.use('/api/attendance', require('./routes/attendanceRoutes'));
 
 // Health Check
 app.get('/', (req, res) => {

@@ -88,6 +88,7 @@ const impersonateUser = async (req, res, next) => {
             _id: user._id,
             userId: user.userId,
             role: user.role,
+            mustChangePassword: user.mustChangePassword,
             token,
             isImpersonated: true
         });
