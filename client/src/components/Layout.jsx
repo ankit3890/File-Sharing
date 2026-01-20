@@ -8,7 +8,18 @@ import { motion } from 'framer-motion';
 const Layout = () => {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
-    const [collapsed, setCollapsed] = useState(false);
+    const [collapsed, setCollapsed] = useState(window.innerWidth < 768);
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+    React.useEffect(() => {
+        const handleResize = () => {
+            const mobile = window.innerWidth < 768;
+            setIsMobile(mobile);
+            if (mobile) setCollapsed(true);
+        };
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     const handleLogout = () => {
         logout();
@@ -29,11 +40,11 @@ const Layout = () => {
         marginBottom: '0.25rem', 
         textDecoration: 'none', 
         color: 'inherit',
-        justifyContent: collapsed ? 'center' : 'flex-start'
+        justifyContent: (collapsed && !isMobile) ? 'center' : 'flex-start'
     };
 
     const handleNavClick = () => {
-        if (!collapsed) setCollapsed(true);
+        if (isMobile) setCollapsed(true);
     };
 
     return (
@@ -41,10 +52,23 @@ const Layout = () => {
             {/* Force Password Reset Overlay */}
             {user.mustChangePassword && <ResetPasswordModal user={user} />}
 
+            {/* Sidebar Overlay for Mobile */}
+            {isMobile && !collapsed && (
+                <div 
+                    onClick={() => setCollapsed(true)}
+                    style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 40 }}
+                />
+            )}
+
             {/* Sidebar */}
             <motion.aside 
-                initial={{ width: '260px' }}
-                animate={{ width: collapsed ? '80px' : '260px' }}
+                initial={false}
+                animate={{ 
+                    width: isMobile 
+                        ? (collapsed ? 0 : '260px') 
+                        : (collapsed ? '80px' : '260px'),
+                    translateX: isMobile && collapsed ? '-100%' : '0%'
+                }}
                 transition={{ duration: 0.3, ease: 'easeInOut' }}
                 style={{ 
                     background: 'var(--bg-card)', 
@@ -52,8 +76,11 @@ const Layout = () => {
                     display: 'flex', 
                     flexDirection: 'column',
                     overflow: 'hidden',
-                    position: 'relative',
-                    flexShrink: 0
+                    position: isMobile ? 'fixed' : 'sticky',
+                    top: 0,
+                    height: '100vh',
+                    flexShrink: 0,
+                    zIndex: 50
                 }}
             >
                 {/* Header & Toggle */}
@@ -70,7 +97,6 @@ const Layout = () => {
                             justifyContent: 'center',
                             padding: '0.5rem',
                             borderRadius: '0.5rem',
-                            // hover effect handled by css or standard browser behavior
                         }}
                         title={collapsed ? "Expand Sidebar" : "Collapse Sidebar"}
                     >
@@ -79,23 +105,23 @@ const Layout = () => {
                 </div>
 
                 {/* Nav */}
-                <nav style={{ flex: 1, padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <nav style={{ flex: 1, padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', overflowY: 'auto', scrollbarWidth: 'none' }}>
                     <NavLink to="/projects" className={navItemClass} style={navItemStyle} title="Projects" onClick={handleNavClick}>
                         <FileText size={20} /> 
-                        {!collapsed && <span>Projects</span>}
+                        {(!collapsed || isMobile) && <span>Projects</span>}
                     </NavLink>
 
                     <NavLink to="/manage-space" className={navItemClass} style={navItemStyle} title="Manage Space" onClick={handleNavClick}>
                         <Settings size={20} /> 
-                        {!collapsed && <span>Manage Space</span>}
+                        {(!collapsed || isMobile) && <span>Manage Space</span>}
                     </NavLink>
 
                     {user.role === 'admin' && (
-                        <div style={{ marginTop: '2rem', borderTop: collapsed ? '1px solid rgba(255,255,255,0.05)' : 'none', paddingTop: collapsed ? '1rem' : '0' }}>
-                            {!collapsed && <p style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: '#64748b', paddingLeft: '0.75rem', marginBottom: '0.5rem', fontWeight: 'bold' }}>Admin</p>}
+                        <div style={{ marginTop: '2rem', borderTop: (collapsed && !isMobile) ? '1px solid rgba(255,255,255,0.05)' : 'none', paddingTop: (collapsed && !isMobile) ? '1rem' : '0' }}>
+                            {(!collapsed || isMobile) && <p style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: '#64748b', paddingLeft: '0.75rem', marginBottom: '0.5rem', fontWeight: 'bold' }}>Admin</p>}
                             <NavLink to="/admin" className={navItemClass} style={navItemStyle} title="Admin Panel" onClick={handleNavClick}>
                                 <Users size={20} /> 
-                                {!collapsed && <span>Admin Panel</span>}
+                                {(!collapsed || isMobile) && <span>Admin Panel</span>}
                             </NavLink>
                         </div>
                     )}
@@ -103,18 +129,18 @@ const Layout = () => {
 
                 {/* Footer User Profile */}
                 <div style={{ padding: '1rem', borderTop: '1px solid var(--border)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem', justifyContent: collapsed ? 'center' : 'flex-start' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem', justifyContent: (collapsed && !isMobile) ? 'center' : 'flex-start' }}>
                         <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', flexShrink: 0 }}>
                             {user.userId.charAt(0).toUpperCase()}
                         </div>
-                        {!collapsed && (
+                        {(!collapsed || isMobile) && (
                             <div style={{ minWidth: 0 }}>
                                 <p style={{ fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user.userId}</p>
                                 <p style={{ fontSize: '0.8rem', color: '#94a3b8' }}>{user.role}</p>
                             </div>
                         )}
                     </div>
-                    {!collapsed ? (
+                    {(!collapsed || isMobile) ? (
                         <button onClick={handleLogout} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem', background: 'transparent', border: '1px solid var(--border)', borderRadius: '0.5rem', color: '#94a3b8', cursor: 'pointer', justifyContent: 'center' }}>
                             <LogOut size={16} /> Logout
                         </button>
@@ -128,15 +154,23 @@ const Layout = () => {
 
             {/* Main Content */}
             <main 
-                style={{ flex: 1, overflowY: 'auto' }}
+                style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}
                 onClick={() => {
-                    if (!collapsed) setCollapsed(true);
+                    if (!collapsed && isMobile) setCollapsed(true);
                 }}
             >
-                <header style={{ padding: '1.5rem 2rem', background: 'var(--bg-dark)', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, zIndex: 10 }}>
+                <header style={{ padding: '1.5rem 2rem', background: 'var(--bg-dark)', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '1rem', position: 'sticky', top: 0, zIndex: 10 }}>
+                    {isMobile && (
+                        <button 
+                            onClick={(e) => { e.stopPropagation(); setCollapsed(!collapsed); }}
+                            style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}
+                        >
+                            <Menu size={24} />
+                        </button>
+                    )}
                     <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>Workspace</h1>
                 </header>
-                <div style={{ padding: '2rem' }}>
+                <div style={{ padding: '2rem', flex: 1 }}>
                     <Outlet />
                 </div>
             </main>

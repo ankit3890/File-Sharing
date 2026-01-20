@@ -262,11 +262,20 @@ const ProjectView = () => {
                         )}
                     </div>
 
-                    <div style={{ padding: '0.75rem 1rem', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'grid', gridTemplateColumns: 'minmax(40px, auto) 2fr 1fr 1fr 1fr', gap: '1rem', color: '#94a3b8', fontSize: '0.85rem', fontWeight: 600 }}>
+                    <div style={{ 
+                        padding: '0.75rem 1rem', 
+                        borderBottom: '1px solid rgba(255,255,255,0.05)', 
+                        display: 'grid', 
+                        gridTemplateColumns: isMobile ? 'auto 1fr auto' : 'minmax(40px, auto) 2fr 1fr 1fr 1fr', 
+                        gap: '1rem', 
+                        color: '#94a3b8', 
+                        fontSize: '0.85rem', 
+                        fontWeight: 600 
+                    }}>
                         <span>Type</span>
                         <span>Name</span>
-                        <span>Size / Date</span>
-                        <span>Uploader</span>
+                        {!isMobile && <span>Size / Date</span>}
+                        {!isMobile && <span>Uploader</span>}
                         <span style={{ textAlign: 'right' }}>Actions</span>
                     </div>
                     
@@ -284,7 +293,7 @@ const ProjectView = () => {
                                     className="file-row"
                                     style={{ 
                                         display: 'grid', 
-                                        gridTemplateColumns: 'minmax(40px, auto) 2fr 1fr 1fr 1fr', 
+                                        gridTemplateColumns: isMobile ? 'auto 1fr auto' : 'minmax(40px, auto) 2fr 1fr 1fr 1fr', 
                                         gap: '1rem', 
                                         padding: '1rem', 
                                         borderBottom: '1px solid rgba(255,255,255,0.03)',
@@ -306,16 +315,25 @@ const ProjectView = () => {
                                             )}
                                         </div>
                                         {file.description && <p style={{ fontSize: '0.75rem', color: '#64748b' }}>{file.description}</p>}
+                                        {isMobile && (
+                                            <p style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '0.2rem' }}>
+                                                 {(file.size / 1024 / 1024).toFixed(2)} MB • {new Date(file.uploadedAt).toLocaleDateString()}
+                                            </p>
+                                        )}
                                     </div>
 
-                                    <div>
-                                        <p style={{ fontSize: '0.85rem' }}>{(file.size / 1024 / 1024).toFixed(2)} MB</p>
-                                        <p style={{ fontSize: '0.75rem', color: '#64748b' }}>{new Date(file.uploadedAt).toLocaleDateString()}</p>
-                                    </div>
+                                    {!isMobile && (
+                                        <div>
+                                            <p style={{ fontSize: '0.85rem' }}>{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                                            <p style={{ fontSize: '0.75rem', color: '#64748b' }}>{new Date(file.uploadedAt).toLocaleDateString()}</p>
+                                        </div>
+                                    )}
 
-                                    <div style={{ fontSize: '0.9rem', color: '#cbd5e1' }}>
-                                        {file.uploader?.userId}
-                                    </div>
+                                    {!isMobile && (
+                                        <div style={{ fontSize: '0.9rem', color: '#cbd5e1' }}>
+                                            {file.uploader?.userId}
+                                        </div>
+                                    )}
 
                                     <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
                                         {!file.deletedByAdmin && (
