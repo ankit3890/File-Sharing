@@ -52,4 +52,17 @@ if (require.main === module) {
     app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 }
 
+// Serve Static Assets in Production
+if (process.env.NODE_ENV === 'production') {
+    const distPath = path.join(__dirname, '../client/dist');
+    app.use(express.static(distPath));
+    
+    // Handle React routing, return all requests to React app
+    app.get('*', (req, res) => {
+        if (!req.url.startsWith('/api')) {
+            res.sendFile(path.resolve(distPath, 'index.html'));
+        }
+    });
+}
+
 module.exports = app;

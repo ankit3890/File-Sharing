@@ -5,7 +5,7 @@
   "scripts": {
     "setup": "npm install && npm install --prefix client && npm install --prefix backend",
     "dev": "concurrently -n \"SERVER,CLIENT\" -c \"bgBlue.bold,bgMagenta.bold\" \"npm run dev --prefix backend\" \"npm run dev --prefix client\"",
-    "start": "npm start --prefix backend",
+    "start": "node backend/index.js",
     "build": "npm run build --prefix client"
   },
   "workspaces": [
