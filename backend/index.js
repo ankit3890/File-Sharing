@@ -18,7 +18,10 @@ app.use((req, res, next) => {
     next();
 });
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+    origin: [process.env.FRONTEND_URL, 'http://localhost:5173', 'http://localhost:3000'].filter(Boolean),
+    credentials: true
+}));
 app.use(helmet({
     crossOriginResourcePolicy: false, // Allow resource loading (images) if needed, though we use stream
 }));
