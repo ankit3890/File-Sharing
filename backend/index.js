@@ -40,7 +40,8 @@ app.get('/api/health', (req, res) => {
     res.send('API is running successfully.');
 });
 
-// Serve Static Assets in Production
+// Serve Static Assets in Production - DISABLED for Split Deployment
+/*
 if (process.env.NODE_ENV === 'production') {
     const distPath = path.join(__dirname, '../client/dist');
     app.use(express.static(distPath));
@@ -54,6 +55,7 @@ if (process.env.NODE_ENV === 'production') {
         }
     });
 }
+*/
 
 // Error Handling Middleware
 app.use((err, req, res, next) => {
