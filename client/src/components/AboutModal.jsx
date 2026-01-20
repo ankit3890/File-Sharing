@@ -36,7 +36,7 @@ const AboutModal = ({ isOpen, onClose }) => {
                                 <Info size={28} color="#3b82f6" />
                             </div>
                             <div>
-                                <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>About</h2>
+                                <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>About The App</h2>
                                 <p style={{ color: '#94a3b8', fontSize: '0.9rem' }}>Version 1.0.0</p>
                             </div>
                         </div>

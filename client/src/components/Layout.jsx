@@ -149,7 +149,7 @@ const Layout = () => {
                     >
                         <Menu size={24} />
                     </button>
-                    <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>Workspace</h1>
+                    <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>P.C Bindal and Co.</h1>
                 </header>
                 <div style={{ padding: '2rem', flex: 1 }}>
                     <Outlet />

@@ -1,14 +1,24 @@
 import React, { useState, useRef } from 'react';
 import api from '../utils/api';
-import { UploadCloud, File, X, Check } from 'lucide-react';
+import { UploadCloud, File, X, Check, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import AlertModal from './AlertModal';
 
 const UploadWidget = ({ projectId, onUploadComplete, initialFile }) => {
     const [dragActive, setDragActive] = useState(false);
     const [uploading, setUploading] = useState(false);
     const [selectedFile, setSelectedFile] = useState(initialFile || null);
     const [description, setDescription] = useState('');
+    const [alertState, setAlertState] = useState({ isOpen: false, title: '', message: '', type: 'error' });
     const inputRef = useRef(null);
+
+    // Progress State
+    const [uploadProgress, setUploadProgress] = useState(0);
+    const [uploadSpeed, setUploadSpeed] = useState('');
+    const [uploadedAmount, setUploadedAmount] = useState('');
+    const [totalAmount, setTotalAmount] = useState('');
+    const startTimeRef = useRef(null);
+    const lastLoadedRef = useRef(0);
 
     React.useEffect(() => {
         if (initialFile) setSelectedFile(initialFile);
@@ -40,27 +50,66 @@ const UploadWidget = ({ projectId, onUploadComplete, initialFile }) => {
         }
     };
 
+    const formatBytes = (bytes) => {
+        if (bytes === 0) return '0 B';
+        const k = 1024;
+        const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    };
+
     const handleUpload = async () => {
         if (!selectedFile) return;
 
         setUploading(true);
+        setUploadProgress(0);
+        setUploadedAmount('0 B');
+        setTotalAmount(formatBytes(selectedFile.size));
+        setUploadSpeed('Starting...');
+        startTimeRef.current = Date.now();
+        lastLoadedRef.current = 0;
+
         const formData = new FormData();
         formData.append('file', selectedFile);
         formData.append('projectId', projectId);
         formData.append('description', description || 'Uploaded via Web');
+        
+        // Ensure totalAmount is set immediately
+        setTotalAmount(formatBytes(selectedFile.size));
 
         try {
             await api.post('/files', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
+                headers: { 'Content-Type': 'multipart/form-data' },
+                onUploadProgress: (progressEvent) => {
+                    const { loaded, total } = progressEvent;
+                    const percent = Math.floor((loaded * 100) / total);
+                    setUploadProgress(percent);
+                    
+                    setUploadedAmount(formatBytes(loaded));
+                    
+                    // Calculate Speed
+                    const now = Date.now();
+                    const diffTime = (now - startTimeRef.current) / 1000; // seconds
+                    if (diffTime > 0) {
+                        const speed = loaded / diffTime; // bytes per second
+                        setUploadSpeed(`${formatBytes(speed)}/s`);
+                    }
+                }
             });
             onUploadComplete();
             // Reset state
             setSelectedFile(null);
             setDescription('');
         } catch (error) {
-            alert(error.response?.data?.message || 'Upload failed');
+            setAlertState({ 
+                isOpen: true, 
+                title: 'Upload Failed', 
+                message: error.response?.data?.message || 'Failed to upload file. Please check storage limits or file size (Max 15MB).', 
+                type: 'error' 
+            });
         } finally {
             setUploading(false);
+            setUploadProgress(0);
         }
     };
 
@@ -74,9 +123,28 @@ const UploadWidget = ({ projectId, onUploadComplete, initialFile }) => {
     return (
         <div className="glass" style={{ padding: '0', borderRadius: '1rem', overflow: 'hidden' }}>
             {uploading ? (
-                <div style={{ padding: '3rem', textAlign: 'center' }}>
-                     <div className="spinner" style={{ width: '40px', height: '40px', border: '4px solid #3b82f6', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto' }}></div>
-                     <p style={{ marginTop: '1rem', color: '#94a3b8' }}>Encrypting & Uploading...</p>
+                <div style={{ padding: '2rem 1.5rem', textAlign: 'center' }}>
+                    <div style={{ marginBottom: '1.5rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.9rem', color: '#cbd5e1' }}>
+                            <span>Uploading...</span>
+                            <span>{uploadProgress}%</span>
+                        </div>
+                        
+                        {/* Progress Bar Container */}
+                        <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', overflow: 'hidden' }}>
+                            <motion.div 
+                                initial={{ width: 0 }}
+                                animate={{ width: `${uploadProgress}%` }}
+                                transition={{ type: 'spring', stiffness: 100, damping: 20 }}
+                                style={{ height: '100%', background: '#3b82f6' }}
+                            />
+                        </div>
+
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem', fontSize: '0.8rem', color: '#94a3b8' }}>
+                            <span>{uploadSpeed}</span>
+                            <span>{uploadedAmount} of {totalAmount}</span>
+                        </div>
+                    </div>
                 </div>
             ) : selectedFile ? (
                 <div style={{ padding: '1.5rem', textAlign: 'left' }}>
@@ -165,7 +233,14 @@ const UploadWidget = ({ projectId, onUploadComplete, initialFile }) => {
                     {dragActive && <div style={{ position: 'absolute', inset: 0, background: 'rgba(59, 130, 246, 0.1)', pointerEvents: 'none' }}></div>}
                 </form>
             )}
-            <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
+            
+            <AlertModal 
+                isOpen={alertState.isOpen}
+                onClose={() => setAlertState(prev => ({ ...prev, isOpen: false }))}
+                title={alertState.title}
+                message={alertState.message}
+                type={alertState.type}
+            />
         </div>
     );
 };

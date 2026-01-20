@@ -5,19 +5,31 @@ import { User, Lock, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const Login = () => {
-    const [userId, setUserId] = useState('');
+    const [userId, setUserId] = useState(localStorage.getItem('savedUserId') || '');
     const [password, setPassword] = useState('');
-    const [acceptTerms, setAcceptTerms] = useState(false);
-    const [rememberMe, setRememberMe] = useState(false);
+    const [rememberMe, setRememberMe] = useState(true);
     const [error, setError] = useState('');
-    const { login } = useAuth();
+    const { login, user } = useAuth();
     const navigate = useNavigate();
+
+    React.useEffect(() => {
+        if (user) {
+            navigate('/dashboard');
+        }
+    }, [user, navigate]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
         try {
             await login(userId, password, rememberMe);
+            
+            if (rememberMe) {
+                localStorage.setItem('savedUserId', userId);
+            } else {
+                localStorage.removeItem('savedUserId');
+            }
+
             navigate('/dashboard');
         } catch (err) {
             setError(err.response?.data?.message || 'Login failed');
@@ -34,7 +46,7 @@ const Login = () => {
                 style={{ width: '100%', maxWidth: '400px', padding: '2.5rem', borderRadius: '1.5rem' }}
             >
                 <h1 style={{ fontSize: '2rem', marginBottom: '0.5rem', textAlign: 'center' }}>Welcome Back</h1>
-                <p style={{ color: '#94a3b8', textAlign: 'center', marginBottom: '2rem' }}>Secure Team Workspace</p>
+                <p style={{ color: '#94a3b8', textAlign: 'center', marginBottom: '2rem' }}>P.C Bindal and Co.</p>
 
                 {error && <div style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', padding: '0.75rem', borderRadius: '0.5rem', marginBottom: '1.5rem', textAlign: 'center', fontSize: '0.9rem' }}>{error}</div>}
 
@@ -63,7 +75,7 @@ const Login = () => {
                             required
                         />
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '2rem' }}>
                         <input 
                             type="checkbox" 
                             id="remember" 
@@ -76,22 +88,8 @@ const Login = () => {
                         </label>
                     </div>
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '2rem' }}>
-                        <input 
-                            type="checkbox" 
-                            id="terms" 
-                            checked={acceptTerms} 
-                            onChange={(e) => setAcceptTerms(e.target.checked)}
-                            style={{ width: '1rem', height: '1rem', cursor: 'pointer', accentColor: '#3b82f6' }}
-                        />
-                        <label htmlFor="terms" style={{ color: '#cbd5e1', fontSize: '0.9rem', cursor: 'pointer' }}>
-                            I agree to the <a href="/terms" style={{ color: '#60a5fa', textDecoration: 'none' }} target="_blank" rel="noopener noreferrer">Terms & Conditions</a>
-                        </label>
-                    </div>
-
                     <button 
                         type="submit" 
-                        disabled={!acceptTerms}
                         className="btn btn-primary" 
                         style={{ 
                             width: '100%', 
@@ -99,8 +97,7 @@ const Login = () => {
                             justifyContent: 'center', 
                             alignItems: 'center', 
                             gap: '0.5rem',
-                            opacity: acceptTerms ? 1 : 0.5,
-                            cursor: acceptTerms ? 'pointer' : 'not-allowed'
+                            cursor: 'pointer'
                         }}
                     >
                         Sign In <ArrowRight size={18} />

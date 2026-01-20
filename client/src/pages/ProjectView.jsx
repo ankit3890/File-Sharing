@@ -6,6 +6,7 @@ import FilePreviewModal from '../components/FilePreviewModal';
 import MembersPanel from '../components/MembersPanel';
 import EditFileModal from '../components/EditFileModal';
 import ConfirmModal from '../components/ConfirmModal';
+import AlertModal from '../components/AlertModal';
 import { File, MoreVertical, Trash2, Eye, Download, Edit2, UploadCloud, Clock, HardDrive, Shield, Search, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { motion } from 'framer-motion';
@@ -35,6 +36,8 @@ const ProjectView = () => {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [fileToDelete, setFileToDelete] = useState(null);
 
+    const [alertState, setAlertState] = useState({ isOpen: false, title: '', message: '', type: 'error' });
+
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth < 768);
         window.addEventListener('resize', handleResize);
@@ -55,7 +58,7 @@ const ProjectView = () => {
         } catch (error) {
             console.error('Failed to update project:', error);
             const msg = error.response?.data?.message || 'Failed to update project details';
-            alert(msg);
+            setAlertState({ isOpen: true, title: 'Update Failed', message: msg, type: 'error' });
         }
     };
 
@@ -96,7 +99,7 @@ const ProjectView = () => {
             fetchProjectData();
             refreshUser();
         } catch (error) {
-            alert('Delete failed');
+            setAlertState({ isOpen: true, title: 'Delete Failed', message: 'Failed to delete file', type: 'error' });
         } finally {
             setFileToDelete(null);
         }
@@ -113,7 +116,7 @@ const ProjectView = () => {
             fetchProjectData();
         } catch (error) {
             console.error('Update failed:', error);
-            alert('Failed to update description');
+            setAlertState({ isOpen: true, title: 'Update Failed', message: 'Failed to update description', type: 'error' });
         }
     };
 
@@ -124,7 +127,7 @@ const ProjectView = () => {
             window.location.href = `/api/files/download/${token}`;
         } catch (error) {
             console.error('Download failed:', error);
-            alert('Could not download file.');
+            setAlertState({ isOpen: true, title: 'Download Failed', message: 'Could not download file.', type: 'error' });
         }
     };
 
@@ -550,6 +553,14 @@ const ProjectView = () => {
                 message="Are you sure you want to delete this file? This action cannot be undone."
                 confirmText="Delete File"
                 isDanger={true}
+            />
+
+            <AlertModal 
+                isOpen={alertState.isOpen}
+                onClose={() => setAlertState(prev => ({ ...prev, isOpen: false }))}
+                title={alertState.title}
+                message={alertState.message}
+                type={alertState.type}
             />
             
             <style>{`
