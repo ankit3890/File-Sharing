@@ -2,8 +2,8 @@ const File = require('../models/File');
 const User = require('../models/User');
 const Project = require('../models/Project');
 const crypto = require('crypto');
-const fs = require('fs');
-const path = require('path');
+const mongoose = require('mongoose');
+const { Readable } = require('stream');
 const jwt = require('jsonwebtoken');
 
 // Encryption Settings
@@ -11,10 +11,17 @@ const ALGORITHM = 'aes-256-cbc';
 const SECRET = process.env.ADMIN_SECRET || 'fallback_secret';
 const ENCRYPTION_KEY = crypto.createHash('sha256').update(SECRET).digest();
 
-console.log('--- ENCRYPTION SETUP ---');
+console.log('--- ENCRYPTION SETUP (GridFS) ---');
 console.log('Secret used:', SECRET === 'fallback_secret' ? 'FALLBACK' : 'ENV_VAR');
 console.log('Key Hash:', crypto.createHash('md5').update(ENCRYPTION_KEY).digest('hex'));
 console.log('------------------------'); 
+
+// Helper to get GridFS Bucket
+const getBucket = () => {
+    return new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
+        bucketName: 'uploads'
+    });
+};
 
 // @desc    Upload File
 // @route   POST /api/files
@@ -35,60 +42,77 @@ const uploadFile = async (req, res, next) => {
              return res.status(403).json({ message: 'Not a member of this project' });
         }
 
-        // 2. Check User Storage Limit (100MB = 100 * 1024 * 1024)
+        // 2. Check User Storage Limit (100MB)
         const STORAGE_LIMIT = 100 * 1024 * 1024;
-        // Optimization: Could cache storageUsed in User model (which we do)
-        // Refresh it? Nah, trust DB.
         const user = await User.findById(req.user._id);
         if (user.storageUsed + fileSize > STORAGE_LIMIT) {
             return res.status(400).json({ message: 'Storage limit exceeded (100MB)' });
         }
 
-        // 3. Encrypt and Save
+        // 3. Encrypt and Save to GridFS
         const iv = crypto.randomBytes(16);
         const filename = `${Date.now()}-${req.file.originalname}`;
-        const filePath = path.join(__dirname, '../uploads', filename + '.enc');
-
-
-        const cipher = crypto.createCipheriv(ALGORITHM, ENCRYPTION_KEY, iv);
-        console.log(`[UPLOAD] Encrypting ${filename} | IV: ${iv.toString('hex')} | KeyHash: ${crypto.createHash('md5').update(ENCRYPTION_KEY).digest('hex')}`);
         
-        // We have buffer in req.file.buffer (memory storage)
-        const encryptedBuffer = Buffer.concat([
-            cipher.update(req.file.buffer),
-            cipher.final()
-        ]);
-
-        console.log(`[UPLOAD] Writing ${encryptedBuffer.length} bytes to ${filePath}`);
-        fs.writeFileSync(filePath, encryptedBuffer);
-
-        // 4. Update Database
-        const newFile = await File.create({
-            filename: filename, // stored filename
-            originalName: req.file.originalname,
-            path: filePath,
-            size: fileSize,
-            mimetype: req.file.mimetype,
-            iv: iv.toString('hex'),
-            uploader: req.user._id,
-            project: projectId,
-            description: description || ''
+        const cipher = crypto.createCipheriv(ALGORITHM, ENCRYPTION_KEY, iv);
+        const bucket = getBucket();
+        
+        // Create Upload Stream
+        const uploadStream = bucket.openUploadStream(filename, {
+            metadata: {
+                originalName: req.file.originalname,
+                mimetype: req.file.mimetype,
+                uploader: req.user._id,
+                projectId: projectId
+            }
         });
 
-        // Update User Storage
-        user.storageUsed += fileSize;
-        await user.save();
+        // Readable Stream from Buffer
+        const bufferStream = new Readable();
+        bufferStream.push(req.file.buffer);
+        bufferStream.push(null); // End of stream
 
-         if (req.logAction) {
-            await req.logAction({
-                action: 'UPLOAD_FILE',
-                file: newFile._id,
-                project: projectId,
-                details: `Uploaded ${req.file.originalname} (${(fileSize/1024/1024).toFixed(2)} MB)`
+        console.log(`[UPLOAD] Streaming encrypted ${filename} to GridFS`);
+
+        // Pipe: Buffer -> Cipher -> GridFS
+        bufferStream
+            .pipe(cipher)
+            .pipe(uploadStream)
+            .on('error', (error) => {
+                console.error('[UPLOAD] Stream Error:', error);
+                return res.status(500).json({ message: 'Upload failed during streaming' });
+            })
+            .on('finish', async () => {
+                console.log(`[UPLOAD] Finished: ${uploadStream.id}`);
+
+                // 4. Update Database (Metadata)
+                const newFile = await File.create({
+                    filename: filename,
+                    originalName: req.file.originalname,
+                    gridFsId: uploadStream.id, // Store GridFS ID
+                    path: 'GRIDFS', // Placeholder
+                    size: fileSize,
+                    mimetype: req.file.mimetype,
+                    iv: iv.toString('hex'),
+                    uploader: req.user._id,
+                    project: projectId,
+                    description: description || ''
+                });
+
+                // Update User Storage
+                user.storageUsed += fileSize;
+                await user.save();
+
+                if (req.logAction) {
+                    await req.logAction({
+                         action: 'UPLOAD_FILE',
+                         file: newFile._id,
+                         project: projectId,
+                         details: `Uploaded ${req.file.originalname} (${(fileSize/1024/1024).toFixed(2)} MB)`
+                    });
+                }
+
+                res.status(201).json(newFile);
             });
-        }
-
-        res.status(201).json(newFile);
 
     } catch (error) {
         next(error);
@@ -103,14 +127,11 @@ const getDownloadToken = async (req, res, next) => {
         const file = await File.findById(req.params.id);
         if (!file) return res.status(404).json({ message: 'File not found' });
 
-        // Check Permissions
-        // Admin OR Project Member
         const project = await Project.findById(file.project);
         if (req.user.role !== 'admin' && !project.members.includes(req.user._id)) {
             return res.status(403).json({ message: 'Access denied' });
         }
 
-        // Generate Short-lived Token (1 minute)
         const token = jwt.sign(
             { fileId: file._id, userId: req.user._id }, 
             process.env.JWT_SECRET, 
@@ -130,7 +151,7 @@ const getDownloadToken = async (req, res, next) => {
 const downloadFile = async (req, res, next) => {
     try {
         const { token } = req.params;
-        const { preview } = req.query; // ?preview=true for inline
+        const { preview } = req.query;
 
         let decoded;
         try {
@@ -142,18 +163,21 @@ const downloadFile = async (req, res, next) => {
         const file = await File.findById(decoded.fileId);
         if (!file) return res.status(404).send('File not found');
 
-        // Check file existence on disk
-        if (!fs.existsSync(file.path)) {
-            return res.status(404).send('File missing on disk');
+        if (!file.gridFsId) {
+             // Fallback for legacy local files (won't work on Vercel but good for local dev history)
+             return res.status(500).send('Legacy file system storage not supported in this environment');
         }
 
-        const iv = Buffer.from(file.iv, 'hex');
-        console.log(`[DOWNLOAD] Decrypting ${file.filename} | IV: ${file.iv} | KeyHash: ${crypto.createHash('md5').update(ENCRYPTION_KEY).digest('hex')}`);
-        const decipher = crypto.createDecipheriv(ALGORITHM, ENCRYPTION_KEY, iv);
-
-        const input = fs.createReadStream(file.path);
+        const bucket = getBucket();
         
-        // Headers
+        // Check if file exists in GridFS
+        // const files = await bucket.find({ _id: file.gridFsId }).toArray();
+        // if (!files.length) return res.status(404).send('File content missing in Storage');
+
+        const iv = Buffer.from(file.iv, 'hex');
+        const decipher = crypto.createDecipheriv(ALGORITHM, ENCRYPTION_KEY, iv);
+        const downloadStream = bucket.openDownloadStream(file.gridFsId);
+
         res.setHeader('Content-Type', file.mimetype);
         if (preview) {
              res.setHeader('Content-Disposition', `inline; filename="${file.originalName}"`);
@@ -161,32 +185,21 @@ const downloadFile = async (req, res, next) => {
              res.setHeader('Content-Disposition', `attachment; filename="${file.originalName}"`);
         }
 
-        // Pipe: Input (File) -> Decipher -> Res (HTTP)
-        input.on('error', (err) => {
-             console.error('Stream Input Error:', err);
-             if (!res.headersSent) res.status(500).end();
-        });
-
-        decipher.on('error', (err) => {
-             console.error('Stream Decryption Error:', err); // Likely wrong key
-             if (!res.headersSent) res.status(500).send('Decryption failed');
-        });
-
-        res.on('error', (err) => {
-             console.error('Stream Response Error:', err);
-        });
-
-        input.pipe(decipher).pipe(res);
+        downloadStream
+            .pipe(decipher)
+            .pipe(res)
+            .on('error', (err) => {
+                console.error('Download/Decryption Error:', err);
+                if (!res.headersSent) res.status(500).end();
+            });
 
     } catch (error) {
-        // Handling stream errors is tricky after headers sent, but basic try/catch helps
         console.error('Download error:', error);
         if (!res.headersSent) res.status(500).send('Server Error during download');
     }
 };
 
-
-// @desc    Get Files for Project (or All for Admin?)
+// @desc    Get Files for Project
 // @route   GET /api/files/project/:projectId
 // @access  Private
 const getProjectFiles = async (req, res, next) => {
@@ -216,23 +229,13 @@ const deleteFile = async (req, res, next) => {
         const file = await File.findById(req.params.id);
         if (!file) return res.status(404).json({ message: 'File not found' });
 
-        // Permission: Admin OR Uploader
         if (req.user.role !== 'admin' && file.uploader.toString() !== req.user._id.toString()) {
-            return res.status(403).json({ message: 'Not authorized to delete this file' });
+            return res.status(403).json({ message: 'Not authorized' });
         }
 
         if (req.user.role === 'admin' && file.uploader.toString() !== req.user._id.toString()) {
-            // Soft Delete for Admin (so users know it was deleted by admin)
+            // Soft Delete for Admin
             file.deletedByAdmin = true;
-            // Optionally, we could remove the file from disk? Or keep it?
-            // "Show Deleted by Admin label". Usually implies the entry stays. 
-            // If we keep the entry, we should probably Keep the file? Or delete the file content but keep metadata?
-            // "Show label" -> Metadata must exist.
-            // Let's keep the file on disk for safety unless explicitly asked to purge.
-            // Actually, if it's "Deleted", usually access is revoked.
-            // Let's keep it simple: Mark metadata. File content remains but maybe inaccessible?
-            // Prompt says: "Show 'Deleted by Admin' label". 
-            // I will just mark it.
             await file.save();
              if (req.logAction) {
                 await req.logAction({
@@ -244,13 +247,17 @@ const deleteFile = async (req, res, next) => {
             }
              res.json({ message: 'File marked as deleted by admin' });
         } else {
-             // Hard Delete for Owner (or Admin deleting own file)
-            // Delete from Disk
-            if (fs.existsSync(file.path)) {
-                fs.unlinkSync(file.path);
-            }
+             // Hard Delete
+             if (file.gridFsId) {
+                 const bucket = getBucket();
+                 try {
+                     await bucket.delete(file.gridFsId);
+                 } catch (err) {
+                     console.warn('GridFS Delete Warning:', err.message);
+                 }
+             }
 
-            // Decrement Storage for Uploader
+             // Storage Update
             const uploader = await User.findById(file.uploader);
             if (uploader) {
                 uploader.storageUsed = Math.max(0, uploader.storageUsed - file.size);
@@ -275,16 +282,15 @@ const deleteFile = async (req, res, next) => {
     }
 };
 
-// @desc    Update File Metadata (Description)
+// @desc    Update File Metadata
 // @route   PUT /api/files/:id
-// @access  Private (Owner or Admin)
+// @access  Private
 const updateFile = async (req, res, next) => {
     try {
         const { description } = req.body;
         const file = await File.findById(req.params.id);
         
         if (!file) return res.status(404).json({ message: 'File not found' });
-
         if (req.user.role !== 'admin' && file.uploader.toString() !== req.user._id.toString()) {
             return res.status(403).json({ message: 'Not authorized' });
         }
@@ -301,14 +307,13 @@ const updateFile = async (req, res, next) => {
                 details: `Updated description for ${file.originalName}`
             });
         }
-
         res.json(file);
     } catch (error) {
         next(error);
     }
 };
 
-// @desc    Preview File (Stream inline) 
+// @desc    Preview File (Stream)
 // @route   GET /api/files/:id/preview
 // @access  Private
 const getPreview = async (req, res, next) => {
@@ -316,64 +321,50 @@ const getPreview = async (req, res, next) => {
         const file = await File.findById(req.params.id);
         if (!file) return res.status(404).json({ message: 'File not found' });
 
-        // Check Permissions
         const project = await Project.findById(file.project);
         if (!project) return res.status(404).json({ message: 'Project not found' });
-        
         if (req.user.role !== 'admin' && !project.members.includes(req.user._id)) {
             return res.status(403).json({ message: 'Access denied' });
         }
 
-        // Check file existence on disk
-        if (!fs.existsSync(file.path)) {
-            return res.status(404).send('File missing on disk');
+        if (!file.gridFsId) {
+             return res.status(500).send('Legacy file system storage not supported');
         }
 
+        const bucket = getBucket();
         const iv = Buffer.from(file.iv, 'hex');
-        console.log(`[PREVIEW] Decrypting ${file.filename} | IV: ${file.iv} | KeyHash: ${crypto.createHash('md5').update(ENCRYPTION_KEY).digest('hex')}`);
         const decipher = crypto.createDecipheriv(ALGORITHM, ENCRYPTION_KEY, iv);
-        const input = fs.createReadStream(file.path);
-        
+        const downloadStream = bucket.openDownloadStream(file.gridFsId);
+
         res.setHeader('Content-Type', file.mimetype);
         res.setHeader('Content-Disposition', `inline; filename="${file.originalName}"`);
 
-        input.on('error', (err) => {
-             console.error('Preview Input Error:', err);
-             if (!res.headersSent) res.status(500).end();
-        });
-
-        decipher.on('error', (err) => {
-             console.error('Preview Decryption Error:', err);
-             if (!res.headersSent) res.status(500).send('File corrupt or decryption failed');
-        });
-
-        res.on('error', (err) => {
-             console.error('Preview Response Error:', err);
-        });
-
-        input.pipe(decipher).pipe(res);
+        downloadStream
+            .pipe(decipher)
+            .pipe(res)
+            .on('error', (err) => {
+                console.error('Preview Error:', err);
+                if (!res.headersSent) res.status(500).end();
+            });
 
     } catch (error) {
-        // console.error('Preview error:', error);
         if (!res.headersSent) res.status(500).send('Server Error during preview');
     }
 };
 
-// @desc    Get All Files for Current User
+// @desc    Get Files for Current User
 // @route   GET /api/files/mine
 // @access  Private
 const getUserFiles = async (req, res, next) => {
     try {
-        console.log(`[getUserFiles] Fetching files for user: ${req.user._id}`);
         const files = await File.find({ uploader: req.user._id }).sort({ uploadedAt: -1 }).populate('uploader', 'userId');
-        console.log(`[getUserFiles] Found ${files.length} files`);
         res.json(files);
     } catch (error) {
         next(error);
     }
 };
 
-// @desc    Delete All Files for Current User (Password Protected)
+// @desc    Delete All User Files
 // @route   DELETE /api/files/mine
 // @access  Private
 const deleteAllUserFiles = async (req, res, next) => {
@@ -381,26 +372,24 @@ const deleteAllUserFiles = async (req, res, next) => {
         const { password } = req.body;
         const user = await User.findById(req.user._id).select('+password');
 
-        // Verify Password
         if (!(await user.matchPassword(password))) {
             return res.status(401).json({ message: 'Invalid password' });
         }
 
         const files = await File.find({ uploader: req.user._id });
+        const bucket = getBucket();
 
-        // Delete from Disk and Database
         for (const file of files) {
-            if (fs.existsSync(file.path)) {
+            if (file.gridFsId) {
                 try {
-                    fs.unlinkSync(file.path);
+                    await bucket.delete(file.gridFsId);
                 } catch (err) {
-                    console.error(`Failed to delete file ${file.path}:`, err);
+                    console.warn(`Failed to delete GridFS file ${file.gridFsId}:`, err.message);
                 }
             }
             await file.deleteOne();
         }
 
-        // Reset Storage
         user.storageUsed = 0;
         await user.save();
 
@@ -419,4 +408,3 @@ const deleteAllUserFiles = async (req, res, next) => {
 };
 
 module.exports = { uploadFile, getDownloadToken, downloadFile, getProjectFiles, deleteFile, updateFile, getPreview, getUserFiles, deleteAllUserFiles };
-

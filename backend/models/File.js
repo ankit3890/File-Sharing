@@ -11,7 +11,11 @@ const fileSchema = new mongoose.Schema({
     },
     path: {
         type: String,
-        required: true
+        required: false // Optional for GridFS
+    },
+    gridFsId: {
+        type: mongoose.Schema.Types.ObjectId, 
+        required: false // Required for new uploads, but optional for migration safety
     },
     size: {
         type: Number,
