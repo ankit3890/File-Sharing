@@ -224,7 +224,7 @@ const Attendance = () => {
 
     const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     const todaysRecord = attendance.find(a => a.date === todayStr && (a.userId === user._id || a.userId?._id === user._id));
-    const isAlreadyMarked = !!todaysRecord;
+    const isAlreadyMarked = todaysRecord && !todaysRecord.isVirtual;
 
     const getStatusColor = (status) => {
         switch (status) {
@@ -337,11 +337,33 @@ const Attendance = () => {
                                 <div style={{ marginTop: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', fontSize: '0.8rem', color: '#10b981' }}>
                                     <span>🟢 Approved</span>
                                     <span style={{ color: '#64748b' }}>·</span>
-                                    <span>Reviewed by <strong>Admin</strong> on <strong>{new Date(todaysRecord.reviewedAt || todaysRecord.updatedAt).toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }).replace(',', ' ·')}</strong></span>
+                                    <span>Reviewed by <strong>Admin</strong> on <strong>{todaysRecord.reviewedAt || todaysRecord.updatedAt ? new Date(todaysRecord.reviewedAt || todaysRecord.updatedAt).toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }).replace(',', ' ·') : 'Recently'}</strong></span>
                                 </div>
                                 <div style={{ marginTop: '1rem', display: 'inline-block', padding: '0.5rem 1.5rem', borderRadius: '0.5rem', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', border: '1px solid #10b98140', fontSize: '0.85rem', fontWeight: 'bold' }}>
                                     Status: Approved ✔
                                 </div>
+                            </div>
+                        ) : todaysRecord.status === 'not_marked' ? (
+                            <div style={{ padding: '0.25rem' }}>
+                                <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>⚪</div>
+                                <h3 style={{ color: '#94a3b8', fontSize: '1.2rem', fontWeight: 'bold' }}>Attendance Not Marked</h3>
+                                <p style={{ color: '#64748b', fontSize: '0.9rem', marginTop: '0.25rem' }}>You haven't marked your attendance for today yet.</p>
+                                <button 
+                                    onClick={handleMarkAttendance}
+                                    style={{
+                                        marginTop: '1.25rem',
+                                        padding: '0.6rem 1.5rem',
+                                        fontSize: '0.9rem',
+                                        fontWeight: 'bold',
+                                        borderRadius: '0.5rem',
+                                        background: '#10b981',
+                                        color: 'white',
+                                        border: 'none',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    Mark Presence Now
+                                </button>
                             </div>
                         ) : (
                             <div style={{ padding: '0.25rem' }}>
@@ -359,14 +381,14 @@ const Attendance = () => {
                                 <div style={{ marginTop: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', fontSize: '0.8rem', color: '#ef4444' }}>
                                     <span>🔴 Rejected</span>
                                     <span style={{ color: '#64748b' }}>·</span>
-                                    <span>Reviewed by <strong>Admin</strong> on <strong>{new Date(todaysRecord.reviewedAt || todaysRecord.updatedAt).toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }).replace(',', ' ·')}</strong></span>
+                                    <span>Reviewed by <strong>Admin</strong> on <strong>{todaysRecord.reviewedAt || todaysRecord.updatedAt ? new Date(todaysRecord.reviewedAt || todaysRecord.updatedAt).toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }).replace(',', ' ·') : 'Recently'}</strong></span>
                                 </div>
                                 
                                 <div style={{ marginTop: '1rem', display: 'inline-block', padding: '0.5rem 1.5rem', borderRadius: '0.5rem', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid #ef444440', fontSize: '0.85rem', fontWeight: 'bold' }}>
                                     Status: Rejected
                                 </div>
                             </div>
-                        )}
+                        )
                     </motion.div>
 
                     {/* Monthly Summary */}
