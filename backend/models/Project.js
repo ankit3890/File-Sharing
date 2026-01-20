@@ -6,6 +6,10 @@ const projectSchema = new mongoose.Schema({
         required: true,
         trim: true
     },
+    description: {
+        type: String,
+        default: ''
+    },
     members: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'

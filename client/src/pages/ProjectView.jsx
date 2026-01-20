@@ -20,6 +20,26 @@ const ProjectView = () => {
     // New State for Search and Filters
     const [fileSearch, setFileSearch] = useState('');
     const [selectedMember, setSelectedMember] = useState(null);
+    const [isEditingProject, setIsEditingProject] = useState(false);
+    const [editDesc, setEditDesc] = useState('');
+    const [editName, setEditName] = useState('');
+
+    const handleEditProject = () => {
+        setEditName(project.name || '');
+        setEditDesc(project.description || '');
+        setIsEditingProject(true);
+    };
+
+    const saveProjectDesc = async () => {
+        try {
+            const res = await api.put(`/projects/${project._id}`, { name: editName, description: editDesc });
+            setProject(prev => ({ ...prev, ...res.data }));
+            setIsEditingProject(false);
+        } catch (error) {
+            console.error('Failed to update project:', error);
+            alert('Failed to update project details');
+        }
+    };
 
     useEffect(() => {
         fetchProjectData();
@@ -109,8 +129,61 @@ const ProjectView = () => {
             {/* Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                 <div>
-                    <h1 style={{ fontSize: '2rem', fontWeight: 'bold' }}>{project.name}</h1>
-                    <p style={{ color: '#94a3b8' }}>{project.description || 'No description'}</p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                        <h1 style={{ fontSize: '2rem', fontWeight: 'bold' }}>{project.name}</h1>
+                        {user.role === 'admin' && (
+                            <button 
+                                onClick={handleEditProject} 
+                                className="btn-icon" 
+                                title="Edit Description"
+                                style={{ color: '#94a3b8' }}
+                            >
+                                <Edit2 size={18} />
+                            </button>
+                        )}
+                    </div>
+                    {isEditingProject ? (
+                        <div style={{ marginTop: '0.5rem' }}>
+                            <input
+                                type="text"
+                                value={editName}
+                                onChange={(e) => setEditName(e.target.value)}
+                                style={{ 
+                                    width: '100%', 
+                                    background: 'rgba(0,0,0,0.2)', 
+                                    border: '1px solid rgba(255,255,255,0.1)', 
+                                    color: 'white', 
+                                    padding: '0.5rem', 
+                                    borderRadius: '0.5rem',
+                                    marginBottom: '0.5rem',
+                                    fontWeight: 'bold',
+                                    fontSize: '1.2rem'
+                                }}
+                                placeholder="Project Name"
+                            />
+                            <textarea
+                                value={editDesc}
+                                onChange={(e) => setEditDesc(e.target.value)}
+                                style={{ 
+                                    width: '100%', 
+                                    background: 'rgba(0,0,0,0.2)', 
+                                    border: '1px solid rgba(255,255,255,0.1)', 
+                                    color: 'white', 
+                                    padding: '0.5rem', 
+                                    borderRadius: '0.5rem',
+                                    marginBottom: '0.5rem'
+                                }}
+                                rows={3}
+                                placeholder="Description"
+                            />
+                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                <button onClick={saveProjectDesc} className="btn-primary" style={{ padding: '0.25rem 0.75rem', fontSize: '0.8rem', borderRadius: '0.25rem', background: '#3b82f6', border: 'none', color: 'white' }}>Save</button>
+                                <button onClick={() => setIsEditingProject(false)} style={{ padding: '0.25rem 0.75rem', fontSize: '0.8rem', background: 'transparent', border: '1px solid #64748b', color: '#94a3b8', borderRadius: '0.25rem' }}>Cancel</button>
+                            </div>
+                        </div>
+                    ) : (
+                        <p style={{ color: '#94a3b8', marginTop: '0.25rem' }}>{project.description || 'No description'}</p>
+                    )}
                 </div>
                 <button 
                     onClick={() => setIsUploadOpen(true)} 
