@@ -210,16 +210,22 @@ const ProjectView = () => {
             </div>
 
             <div style={{ 
-                display: 'grid', 
-                gridTemplateColumns: isMobile ? '1fr' : '3fr 1fr', 
+                display: isMobile ? 'flex' : 'grid', 
+                flexDirection: isMobile ? 'column' : undefined,
+                gridTemplateColumns: isMobile ? undefined : '3fr 1fr', 
                 gap: '1.5rem', 
                 flex: 1, 
                 overflow: isMobile ? 'auto' : 'hidden',
-                gridTemplateRows: isMobile ? 'auto 1fr' : '1fr' 
             }}>
                 
                 {/* File List (Vertical) */}
-                <div className="glass" style={{ borderRadius: '1rem', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+                <div className="glass" style={{ 
+                    borderRadius: '1rem', 
+                    overflow: isMobile ? 'visible' : 'hidden', 
+                    display: 'flex', 
+                    flexDirection: 'column',
+                    minHeight: isMobile ? '200px' : 'auto'
+                }}>
                     
                     {/* Search and Filter Bar */}
                     <div style={{ padding: '1rem', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', gap: '1rem', alignItems: 'center' }}>
@@ -279,7 +285,7 @@ const ProjectView = () => {
                         <span style={{ textAlign: 'right' }}>Actions</span>
                     </div>
                     
-                    <div style={{ overflowY: 'auto', flex: 1 }}>
+                    <div style={{ overflowY: isMobile ? 'visible' : 'auto', flex: isMobile ? 'none' : 1 }}>
                         {visibleFiles.length === 0 ? (
                             <p style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>
                                 {files.length === 0 ? 'No files uploaded yet.' : 'No matching files found.'}
@@ -359,11 +365,13 @@ const ProjectView = () => {
                 </div>
 
                 {/* Members Sidebar */}
-                <MembersPanel 
-                    members={project.members} 
-                    onMemberSelect={handleMemberSelect}
-                    selectedMemberId={selectedMember?._id}
-                />
+                <div style={{ height: isMobile ? '500px' : 'auto', overflow: 'hidden' }}>
+                    <MembersPanel 
+                        members={project.members} 
+                        onMemberSelect={handleMemberSelect}
+                        selectedMemberId={selectedMember?._id}
+                    />
+                </div>
 
             </div>
 
