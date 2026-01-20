@@ -89,7 +89,7 @@ const ManageSpace = () => {
                 )}
             </div>
 
-            <div className="glass" style={{ borderRadius: '0.5rem', overflow: 'hidden' }}>
+            <div className="glass" style={{ borderRadius: '0.5rem', overflow: 'hidden', overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead>
                         <tr style={{ background: 'rgba(255,255,255,0.05)', textAlign: 'left', color: '#94a3b8' }}>

@@ -135,6 +135,34 @@ const removeMember = async (req, res, next) => {
     }
 };
 
+// @desc    Update project (Name/Description)
+// @route   PUT /api/projects/:id
+// @access  Private/Admin
+const updateProject = async (req, res, next) => {
+    try {
+        const { name, description } = req.body;
+        const project = await Project.findById(req.params.id);
+
+        if (!project) return res.status(404).json({ message: 'Project not found' });
+
+        project.name = name || project.name;
+        project.description = description !== undefined ? description : project.description;
+        
+        await project.save();
+
+         if (req.logAction) {
+            await req.logAction({
+                action: 'UPDATE_PROJECT',
+                project: project._id,
+                details: `Updated project ${project.name}`
+            });
+        }
+        res.json(project);
+    } catch (error) {
+        next(error);
+    }
+};
+
 // @desc    Delete project
 // @route   DELETE /api/projects/:id
 // @access  Private/Admin
@@ -189,4 +217,4 @@ const getProjectById = async (req, res, next) => {
     }
 };
 
-module.exports = { createProject, getProjects, addMember, removeMember, deleteProject, getProjectById };
+module.exports = { createProject, getProjects, addMember, removeMember, deleteProject, getProjectById, updateProject };

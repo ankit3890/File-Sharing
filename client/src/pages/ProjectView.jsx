@@ -133,7 +133,7 @@ const ProjectView = () => {
     if (!project) return <div className="p-8 text-center">Project not found</div>;
 
     return (
-        <div style={{ padding: '1rem', height: 'calc(100vh - 100px)', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ padding: '1rem', height: isMobile ? 'auto' : 'calc(100vh - 100px)', display: 'flex', flexDirection: 'column', overflow: isMobile ? 'visible' : 'hidden' }}>
             {/* Header */}
             <div style={{ 
                 display: 'flex', 
@@ -215,7 +215,7 @@ const ProjectView = () => {
                 gridTemplateColumns: isMobile ? undefined : '3fr 1fr', 
                 gap: '1.5rem', 
                 flex: 1, 
-                overflow: isMobile ? 'auto' : 'hidden',
+                overflow: isMobile ? 'visible' : 'hidden',
             }}>
                 
                 {/* File List (Vertical) */}
@@ -365,7 +365,7 @@ const ProjectView = () => {
                 </div>
 
                 {/* Members Sidebar */}
-                <div style={{ height: isMobile ? '500px' : 'auto', overflow: 'hidden' }}>
+                <div style={{ height: 'auto', overflow: 'visible' }}>
                     <MembersPanel 
                         members={project.members} 
                         onMemberSelect={handleMemberSelect}
