@@ -4,6 +4,8 @@ import api from '../utils/api';
 import UploadModal from '../components/UploadModal';
 import FilePreviewModal from '../components/FilePreviewModal';
 import MembersPanel from '../components/MembersPanel';
+import EditFileModal from '../components/EditFileModal';
+import ConfirmModal from '../components/ConfirmModal';
 import { File, MoreVertical, Trash2, Eye, Download, Edit2, UploadCloud, Clock, HardDrive, Shield, Search, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { motion } from 'framer-motion';
@@ -24,6 +26,14 @@ const ProjectView = () => {
     const [editDesc, setEditDesc] = useState('');
     const [editName, setEditName] = useState('');
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+    
+    // File Edit Modal State
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [fileToEdit, setFileToEdit] = useState(null);
+
+    // File Delete Modal State
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [fileToDelete, setFileToDelete] = useState(null);
 
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -74,27 +84,36 @@ const ProjectView = () => {
         refreshUser();
     };
 
-    const handleDelete = async (fileId) => {
-        if (window.confirm('Delete this file?')) {
-            try {
-                await api.delete(`/files/${fileId}`);
-                fetchProjectData();
-                refreshUser();
-            } catch (error) {
-                alert('Delete failed');
-            }
+    const handleDeleteClick = (file) => {
+        setFileToDelete(file);
+        setIsDeleteModalOpen(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!fileToDelete) return;
+        try {
+            await api.delete(`/files/${fileToDelete._id}`);
+            fetchProjectData();
+            refreshUser();
+        } catch (error) {
+            alert('Delete failed');
+        } finally {
+            setFileToDelete(null);
         }
     };
 
-    const handleEdit = async (file) => {
-        const newDesc = prompt('Enter new description:', file.description);
-        if (newDesc !== null && newDesc !== file.description) {
-            try {
-                await api.put(`/files/${file._id}`, { description: newDesc });
-                fetchProjectData();
-            } catch (error) {
-                alert('Update failed');
-            }
+    const handleEdit = (file) => {
+        setFileToEdit(file);
+        setIsEditModalOpen(true);
+    };
+
+    const handleSaveDescription = async (fileId, newDescription) => {
+        try {
+            await api.put(`/files/${fileId}`, { description: newDescription });
+            fetchProjectData();
+        } catch (error) {
+            console.error('Update failed:', error);
+            alert('Failed to update description');
         }
     };
 
@@ -129,11 +148,83 @@ const ProjectView = () => {
         return isDeletedVisible && matchesSearch && matchesMember;
     });
 
+    // Drag & Drop State
+    const [dragActive, setDragActive] = useState(false);
+    const [droppedFile, setDroppedFile] = useState(null);
+    const [viewedFiles, setViewedFiles] = useState(() => {
+        const saved = localStorage.getItem('viewedFiles');
+        return saved ? JSON.parse(saved) : [];
+    });
+
+    const markAsViewed = (fileId) => {
+        if (!viewedFiles.includes(fileId)) {
+            const newViewed = [...viewedFiles, fileId];
+            setViewedFiles(newViewed);
+            localStorage.setItem('viewedFiles', JSON.stringify(newViewed));
+        }
+    };
+
+    const handleDrag = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.type === 'dragenter' || e.type === 'dragover') {
+            setDragActive(true);
+        } else if (e.type === 'dragleave') {
+            setDragActive(false);
+        }
+    };
+
+    const handleDrop = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setDragActive(false);
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+            setDroppedFile(e.dataTransfer.files[0]);
+            setIsUploadOpen(true);
+        }
+    };
+
+    const handlePreview = (file) => {
+        setSelectedFile(file);
+        markAsViewed(file._id);
+    };
+
+    const handleDownloadSmart = (fileId, fileName) => {
+        handleDownload(fileId, fileName);
+        markAsViewed(fileId);
+    };
+
     if (loading) return <div className="p-8 text-center">Loading Project...</div>;
     if (!project) return <div className="p-8 text-center">Project not found</div>;
 
     return (
-        <div style={{ padding: '1rem', height: isMobile ? 'auto' : 'calc(100vh - 100px)', display: 'flex', flexDirection: 'column', overflow: isMobile ? 'visible' : 'hidden' }}>
+        <div 
+            style={{ padding: '1rem', height: isMobile ? 'auto' : 'calc(100vh - 100px)', display: 'flex', flexDirection: 'column', overflow: isMobile ? 'visible' : 'hidden', position: 'relative' }}
+            onDragEnter={handleDrag}
+            onDragOver={handleDrag}
+            onDragLeave={handleDrag}
+            onDrop={handleDrop}
+        >
+            {/* Drag Overlay */}
+            {dragActive && (
+                <div style={{
+                    position: 'absolute',
+                    inset: 0,
+                    background: 'rgba(59, 130, 246, 0.1)',
+                    border: '2px dashed #3b82f6',
+                    zIndex: 100,
+                    pointerEvents: 'none',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                }}>
+                    <div style={{ background: '#1e293b', padding: '1rem 2rem', borderRadius: '1rem', display: 'flex', alignItems: 'center', gap: '1rem', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}>
+                        <UploadCloud size={32} color="#3b82f6" />
+                        <span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Drop to Upload</span>
+                    </div>
+                </div>
+            )}
+
             {/* Header */}
             <div style={{ 
                 display: 'flex', 
@@ -286,12 +377,49 @@ const ProjectView = () => {
                     </div>
                     
                     <div style={{ overflowY: isMobile ? 'visible' : 'auto', flex: isMobile ? 'none' : 1 }}>
-                        {visibleFiles.length === 0 ? (
-                            <p style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>
-                                {files.length === 0 ? 'No files uploaded yet.' : 'No matching files found.'}
-                            </p>
+                        {loading ? (
+                            // Skeleton Loader
+                            [1, 2, 3].map(i => (
+                                <div key={i} style={{ 
+                                    display: 'grid', 
+                                    gridTemplateColumns: isMobile ? 'auto 1fr auto' : 'minmax(40px, auto) 2fr 1fr 1fr 1fr', 
+                                    gap: '1rem', 
+                                    padding: '1rem', 
+                                    borderBottom: '1px solid rgba(255,255,255,0.03)',
+                                    alignItems: 'center'
+                                }}>
+                                    <div style={{ width: 24, height: 24, background: 'rgba(255,255,255,0.1)', borderRadius: 4 }} />
+                                    <div>
+                                        <div style={{ width: '60%', height: 16, background: 'rgba(255,255,255,0.1)', borderRadius: 4, marginBottom: 8 }} />
+                                        <div style={{ width: '40%', height: 12, background: 'rgba(255,255,255,0.05)', borderRadius: 4 }} />
+                                    </div>
+                                    {!isMobile && <div style={{ width: '50%', height: 16, background: 'rgba(255,255,255,0.05)', borderRadius: 4 }} />}
+                                    {!isMobile && <div style={{ width: '50%', height: 16, background: 'rgba(255,255,255,0.05)', borderRadius: 4 }} />}
+                                    <div />
+                                </div>
+                            ))
+                        ) : visibleFiles.length === 0 ? (
+                            // Empty State
+                            <div style={{ padding: '3rem', textAlign: 'center', color: '#64748b', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+                                <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'rgba(255,255,255,0.03)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <File size={32} strokeWidth={1} />
+                                </div>
+                                <p>{files.length === 0 ? 'No files uploaded yet.' : 'No matching files found.'}</p>
+                            </div>
                         ) : (
-                            visibleFiles.map(file => (
+                            visibleFiles.map(file => {
+                                const now = new Date();
+                                const uploadedAt = new Date(file.uploadedAt);
+                                const updatedAt = file.updatedAt ? new Date(file.updatedAt) : null;
+                                
+                                // NEW Logic: < 24h AND Not Viewed
+                                const isNewTime = (now - uploadedAt) < (24 * 60 * 60 * 1000);
+                                const isNew = isNewTime && !viewedFiles.includes(file._id);
+
+                                // UPDATED Logic: < 24h since last update
+                                const isUpdatedSmart = updatedAt && (now - updatedAt) < (24 * 60 * 60 * 1000);
+
+                                return (
                                 <motion.div 
                                     key={file._id} 
                                     initial={{ opacity: 0 }}
@@ -308,14 +436,26 @@ const ProjectView = () => {
                                     }}
                                 >
                                     <div style={{ display: 'flex', justifyContent: 'center' }}>
-                                        <File size={24} style={{ color: '#94a3b8' }} />
+                                        <File size={24} style={{ color: isNew ? '#3b82f6' : '#94a3b8' }} />
                                     </div>
                                     
                                     <div style={{ minWidth: 0 }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                            <p style={{ fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={file.originalName}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                                            <p 
+                                                style={{ fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', cursor: 'pointer' }} 
+                                                title="Double click to edit description"
+                                                onDoubleClick={() => handleEdit(file)}
+                                            >
                                                 {file.originalName}
                                             </p>
+                                            
+                                            {/* Badges */}
+                                            {isNew && (
+                                                <span style={{ fontSize: '0.65rem', background: '#3b82f6', color: 'white', padding: '0.1rem 0.4rem', borderRadius: '4px', fontWeight: 'bold' }}>NEW</span>
+                                            )}
+                                            {isUpdatedSmart && (
+                                                <span style={{ fontSize: '0.65rem', background: 'rgba(59, 130, 246, 0.2)', color: '#60a5fa', padding: '0.1rem 0.4rem', borderRadius: '4px', fontWeight: 'bold' }}>UPDATED</span>
+                                            )}
                                             {file.deletedByAdmin && (
                                                 <span style={{ fontSize: '0.65rem', background: '#ef4444', color: 'white', padding: '0.1rem 0.4rem', borderRadius: '4px' }}>DELETED</span>
                                             )}
@@ -344,30 +484,31 @@ const ProjectView = () => {
                                     <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
                                         {!file.deletedByAdmin && (
                                             <>
-                                                <button onClick={() => setSelectedFile(file)} className="btn-icon" title="Preview"><Eye size={18} /></button>
-                                                <button onClick={() => handleDownload(file._id, file.originalName)} className="btn-icon" title="Download"><Download size={18} /></button>
+                                                <button onClick={() => handlePreview(file)} className="btn-icon" title="Preview"><Eye size={18} /></button>
+                                                <button onClick={() => handleDownloadSmart(file._id, file.originalName)} className="btn-icon" title="Download"><Download size={18} /></button>
                                             </>
                                         )}
-                                        
+
                                         {(user.role === 'admin' || (user._id === file.uploader?._id && !file.deletedByAdmin)) && (
                                             <>
                                                 {!file.deletedByAdmin && (
                                                     <button onClick={() => handleEdit(file)} className="btn-icon" title="Edit"><Edit2 size={18} /></button>
                                                 )}
-                                                <button onClick={() => handleDelete(file._id)} className="btn-icon" style={{ color: '#ef4444' }} title="Delete"><Trash2 size={18} /></button>
+                                                <button onClick={() => handleDeleteClick(file)} className="btn-icon" style={{ color: '#ef4444' }} title="Delete"><Trash2 size={18} /></button>
                                             </>
                                         )}
                                     </div>
                                 </motion.div>
-                            ))
+                                );
+                            })
                         )}
                     </div>
                 </div>
 
                 {/* Members Sidebar */}
                 <div style={{ height: 'auto', overflow: 'visible' }}>
-                    <MembersPanel 
-                        members={project.members} 
+                    <MembersPanel
+                        members={project.members}
                         onMemberSelect={handleMemberSelect}
                         selectedMemberId={selectedMember?._id}
                     />
@@ -377,12 +518,39 @@ const ProjectView = () => {
 
             <UploadModal 
                 isOpen={isUploadOpen} 
-                onClose={() => setIsUploadOpen(false)} 
+                onClose={() => {
+                    setIsUploadOpen(false);
+                    setDroppedFile(null);
+                }} 
                 projectId={id} 
                 onUploadComplete={handleUploadComplete} 
+                initialFile={droppedFile}
+            />
+
+            <EditFileModal 
+                isOpen={isEditModalOpen} 
+                onClose={() => {
+                    setIsEditModalOpen(false);
+                    setFileToEdit(null);
+                }} 
+                file={fileToEdit} 
+                onSave={handleSaveDescription} 
             />
 
             {selectedFile && <FilePreviewModal file={selectedFile} onClose={() => setSelectedFile(null)} />}
+
+            <ConfirmModal 
+                isOpen={isDeleteModalOpen}
+                onClose={() => {
+                    setIsDeleteModalOpen(false);
+                    setFileToDelete(null);
+                }} 
+                onConfirm={confirmDelete}
+                title="Delete File?"
+                message="Are you sure you want to delete this file? This action cannot be undone."
+                confirmText="Delete File"
+                isDanger={true}
+            />
             
             <style>{`
                 .file-row:hover { background: rgba(255,255,255,0.03) !important; }

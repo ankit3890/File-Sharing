@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import ResetPasswordModal from './ResetPasswordModal';
-import { LayoutDashboard, Users, FileText, Settings, LogOut, Menu } from 'lucide-react';
+import AboutModal from './AboutModal';
+import { LayoutDashboard, Users, FileText, Settings, LogOut, Menu, Info } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const Layout = () => {
@@ -10,6 +11,7 @@ const Layout = () => {
     const navigate = useNavigate();
     const [collapsed, setCollapsed] = useState(window.innerWidth < 768);
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+    const [showAbout, setShowAbout] = useState(false);
 
     React.useEffect(() => {
         const handleResize = () => {
@@ -51,6 +53,7 @@ const Layout = () => {
         <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg-dark)' }}>
             {/* Force Password Reset Overlay */}
             {user.mustChangePassword && <ResetPasswordModal user={user} />}
+            <AboutModal isOpen={showAbout} onClose={() => setShowAbout(false)} />
 
             {/* Sidebar Overlay for Mobile */}
             {isMobile && !collapsed && (
@@ -102,6 +105,16 @@ const Layout = () => {
                             </NavLink>
                         </div>
                     )}
+                    
+                    <button 
+                        onClick={() => { setShowAbout(true); handleNavClick(); }} 
+                        className={navItemClass} 
+                        style={{ ...navItemStyle, background: 'none', border: 'none', cursor: 'pointer', width: '100%', marginTop: 'auto' }}
+                        title="About"
+                    >
+                        <Info size={20} />
+                        <span>About </span>
+                    </button>
                 </nav>
 
                 {/* Footer User Profile */}

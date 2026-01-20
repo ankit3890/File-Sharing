@@ -3,12 +3,16 @@ import api from '../utils/api';
 import { UploadCloud, File, X, Check } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-const UploadWidget = ({ projectId, onUploadComplete }) => {
+const UploadWidget = ({ projectId, onUploadComplete, initialFile }) => {
     const [dragActive, setDragActive] = useState(false);
     const [uploading, setUploading] = useState(false);
-    const [selectedFile, setSelectedFile] = useState(null);
+    const [selectedFile, setSelectedFile] = useState(initialFile || null);
     const [description, setDescription] = useState('');
     const inputRef = useRef(null);
+
+    React.useEffect(() => {
+        if (initialFile) setSelectedFile(initialFile);
+    }, [initialFile]);
 
     const handleDrag = (e) => {
         e.preventDefault();

@@ -3,7 +3,7 @@ import { X } from 'lucide-react';
 import UploadWidget from './UploadWidget';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const UploadModal = ({ isOpen, onClose, projectId, onUploadComplete }) => {
+const UploadModal = ({ isOpen, onClose, projectId, onUploadComplete, initialFile }) => {
     if (!isOpen) return null;
 
     return (
@@ -56,7 +56,7 @@ const UploadModal = ({ isOpen, onClose, projectId, onUploadComplete }) => {
                     </button>
                     
                     <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '1.5rem' }}>Upload Files</h2>
-                    <UploadWidget projectId={projectId} onUploadComplete={() => { onUploadComplete(); onClose(); }} />
+                    <UploadWidget projectId={projectId} onUploadComplete={() => { onUploadComplete(); onClose(); }} initialFile={initialFile} />
                 </motion.div>
             </motion.div>
         </AnimatePresence>

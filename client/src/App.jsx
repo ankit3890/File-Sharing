@@ -7,6 +7,7 @@ import AdminPanel from './pages/AdminPanel';
 import Projects from './pages/Projects';
 import ProjectView from './pages/ProjectView';
 import ManageSpace from './pages/ManageSpace';
+import Terms from './pages/Terms';
 
 const AdminRoute = ({ children }) => {
     const { user, loading } = useAuth();
@@ -28,6 +29,7 @@ function App() {
             <Router>
                 <Routes>
                     <Route path="/login" element={<Login />} />
+                    <Route path="/terms" element={<Terms />} />
                     
                     <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
                         <Route index element={<Navigate to="/projects" />} />

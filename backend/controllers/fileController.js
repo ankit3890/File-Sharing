@@ -289,6 +289,7 @@ const updateFile = async (req, res, next) => {
 
         file.description = description;
         file.isEdited = true;
+        file.updatedAt = Date.now();
         await file.save();
 
          if (req.logAction) {

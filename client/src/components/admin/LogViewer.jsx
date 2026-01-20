@@ -1,11 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../utils/api';
 import { Trash2 } from 'lucide-react';
+import AlertModal from '../AlertModal';
+import ConfirmModal from '../ConfirmModal';
 
 const LogViewer = () => {
     const [logs, setLogs] = useState([]);
     const [page, setPage] = useState(1);
     const [pages, setPages] = useState(1);
+    
+    // Modals
+    const [alertState, setAlertState] = useState({ isOpen: false, title: '', message: '', type: 'error' });
+    const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
     useEffect(() => {
         fetchLogs();
@@ -21,14 +27,13 @@ const LogViewer = () => {
         }
     };
 
-    const handleClearLogs = async () => {
-        if (window.confirm('Are you sure you want to clear ALL audit logs? This cannot be undone.')) {
-            try {
-                await api.delete('/admin/logs');
-                fetchLogs();
-            } catch (error) {
-                alert('Failed to clear logs');
-            }
+    const confirmClearLogs = async () => {
+        try {
+            await api.delete('/admin/logs');
+            fetchLogs();
+            setAlertState({ isOpen: true, title: 'Success', message: 'Audit logs cleared', type: 'success' });
+        } catch (error) {
+            setAlertState({ isOpen: true, title: 'Error', message: 'Failed to clear logs', type: 'error' });
         }
     };
 
@@ -36,7 +41,7 @@ const LogViewer = () => {
         <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                 <h3 style={{ fontSize: '1.25rem' }}>System Logs</h3>
-                <button onClick={handleClearLogs} className="btn" style={{ background: '#ef4444', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <button onClick={() => setIsConfirmOpen(true)} className="btn" style={{ background: '#ef4444', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <Trash2 size={16} /> Clear Logs
                 </button>
             </div>
@@ -69,6 +74,24 @@ const LogViewer = () => {
                 <span style={{ display: 'flex', alignItems: 'center' }}>Page {page} of {pages}</span>
                 <button disabled={page === pages} onClick={() => setPage(p => p + 1)} className="btn" style={{ background: '#334155' }}>Next</button>
             </div>
+
+            <AlertModal 
+                isOpen={alertState.isOpen} 
+                onClose={() => setAlertState(prev => ({ ...prev, isOpen: false }))}
+                title={alertState.title}
+                message={alertState.message}
+                type={alertState.type}
+            />
+
+            <ConfirmModal 
+                isOpen={isConfirmOpen}
+                onClose={() => setIsConfirmOpen(false)}
+                onConfirm={confirmClearLogs}
+                title="Clear All Logs?"
+                message="Are you sure you want to clear ALL audit logs? This action is permanent and cannot be undone."
+                confirmText="Clear Logs"
+                isDanger={true}
+            />
         </div>
     );
 };

@@ -1,11 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../utils/api';
 import { Trash2, UserPlus, User } from 'lucide-react';
+import AlertModal from '../AlertModal';
+import ConfirmModal from '../ConfirmModal';
 
 const UserManagement = () => {
     const [users, setUsers] = useState([]);
     const [newUser, setNewUser] = useState('');
     const [loading, setLoading] = useState(true);
+    
+    // Modal States
+    const [alertState, setAlertState] = useState({ isOpen: false, title: '', message: '', type: 'error' });
+    const [confirmState, setConfirmState] = useState({ isOpen: false, userId: null });
 
     useEffect(() => {
         fetchUsers();
@@ -27,27 +33,36 @@ const UserManagement = () => {
             await api.post('/users', { userId: newUser });
             setNewUser('');
             fetchUsers();
+            setAlertState({ isOpen: true, title: 'Success', message: 'User added successfully', type: 'success' });
         } catch (error) {
-            alert(error.response?.data?.message || 'Failed to add user');
+            setAlertState({ 
+                isOpen: true, 
+                title: 'Failed to create user', 
+                message: error.response?.data?.message || 'Failed to add user', 
+                type: 'error' 
+            });
         }
     };
 
-    const handleDeleteUser = async (id) => {
-        if (window.confirm('Are you sure? This will delete all their files!')) {
-            try {
-                await api.delete(`/users/${id}`);
-                fetchUsers();
-            } catch (error) {
-                alert('Failed to delete user');
-            }
+    const handleDeleteClick = (id) => {
+        setConfirmState({ isOpen: true, userId: id });
+    };
+
+    const confirmDelete = async () => {
+        if (!confirmState.userId) return;
+        try {
+            await api.delete(`/users/${confirmState.userId}`);
+            fetchUsers();
+            setAlertState({ isOpen: true, title: 'Success', message: 'User deleted', type: 'success' });
+        } catch (error) {
+            setAlertState({ isOpen: true, title: 'Error', message: 'Failed to delete user', type: 'error' });
+        } finally {
+            setConfirmState({ isOpen: false, userId: null });
         }
     };
 
     const handleImpersonate = async (id) => {
-        // Not implemented in UI yet
-        // await impersonate(id);
-        // navigate('/dashboard');
-        alert("Impersonation feature ready pending UI integration");
+        setAlertState({ isOpen: true, title: 'Coming Soon', message: "Impersonation feature ready pending UI integration", type: 'info' });
     };
 
     return (
@@ -93,7 +108,7 @@ const UserManagement = () => {
                                 <td style={{ padding: '1rem' }}>{(user.storageUsed / 1024 / 1024).toFixed(2)} MB</td>
                                 <td style={{ padding: '1rem' }}>
                                     {user.role !== 'admin' && (
-                                        <button onClick={() => handleDeleteUser(user._id)} style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '0.5rem', borderRadius: '0.25rem' }}>
+                                        <button onClick={() => handleDeleteClick(user._id)} style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '0.5rem', borderRadius: '0.25rem' }}>
                                             <Trash2 size={18} />
                                         </button>
                                     )}
@@ -103,6 +118,24 @@ const UserManagement = () => {
                     </tbody>
                 </table>
             </div>
+
+            <AlertModal 
+                isOpen={alertState.isOpen} 
+                onClose={() => setAlertState(prev => ({ ...prev, isOpen: false }))}
+                title={alertState.title}
+                message={alertState.message}
+                type={alertState.type}
+            />
+
+            <ConfirmModal 
+                isOpen={confirmState.isOpen}
+                onClose={() => setConfirmState(prev => ({ ...prev, isOpen: false }))}
+                onConfirm={confirmDelete}
+                title="Delete User?"
+                message="Are you sure you want to delete this user? This will delete all their files and cannot be undone."
+                confirmText="Delete User"
+                isDanger={true}
+            />
         </div>
     );
 };

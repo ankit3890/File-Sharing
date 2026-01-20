@@ -7,6 +7,8 @@ import { motion } from 'framer-motion';
 const Login = () => {
     const [userId, setUserId] = useState('');
     const [password, setPassword] = useState('');
+    const [acceptTerms, setAcceptTerms] = useState(false);
+    const [rememberMe, setRememberMe] = useState(false);
     const [error, setError] = useState('');
     const { login } = useAuth();
     const navigate = useNavigate();
@@ -15,7 +17,7 @@ const Login = () => {
         e.preventDefault();
         setError('');
         try {
-            await login(userId, password);
+            await login(userId, password, rememberMe);
             navigate('/dashboard');
         } catch (err) {
             setError(err.response?.data?.message || 'Login failed');
@@ -61,7 +63,46 @@ const Login = () => {
                             required
                         />
                     </div>
-                    <button type="submit" className="btn btn-primary" style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+                        <input 
+                            type="checkbox" 
+                            id="remember" 
+                            checked={rememberMe} 
+                            onChange={(e) => setRememberMe(e.target.checked)}
+                            style={{ width: '1rem', height: '1rem', cursor: 'pointer', accentColor: '#3b82f6' }}
+                        />
+                        <label htmlFor="remember" style={{ color: '#cbd5e1', fontSize: '0.9rem', cursor: 'pointer' }}>
+                            Remember Me
+                        </label>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '2rem' }}>
+                        <input 
+                            type="checkbox" 
+                            id="terms" 
+                            checked={acceptTerms} 
+                            onChange={(e) => setAcceptTerms(e.target.checked)}
+                            style={{ width: '1rem', height: '1rem', cursor: 'pointer', accentColor: '#3b82f6' }}
+                        />
+                        <label htmlFor="terms" style={{ color: '#cbd5e1', fontSize: '0.9rem', cursor: 'pointer' }}>
+                            I agree to the <a href="/terms" style={{ color: '#60a5fa', textDecoration: 'none' }} target="_blank" rel="noopener noreferrer">Terms & Conditions</a>
+                        </label>
+                    </div>
+
+                    <button 
+                        type="submit" 
+                        disabled={!acceptTerms}
+                        className="btn btn-primary" 
+                        style={{ 
+                            width: '100%', 
+                            display: 'flex', 
+                            justifyContent: 'center', 
+                            alignItems: 'center', 
+                            gap: '0.5rem',
+                            opacity: acceptTerms ? 1 : 0.5,
+                            cursor: acceptTerms ? 'pointer' : 'not-allowed'
+                        }}
+                    >
                         Sign In <ArrowRight size={18} />
                     </button>
                 </form>

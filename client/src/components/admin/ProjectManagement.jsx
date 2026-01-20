@@ -1,12 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../utils/api';
 import { FolderPlus, Trash2, Folder, UserPlus, X } from 'lucide-react';
+import AlertModal from '../AlertModal';
+import ConfirmModal from '../ConfirmModal';
 
 const ProjectManagement = () => {
     const [projects, setProjects] = useState([]);
     const [newProject, setNewProject] = useState('');
     const [users, setUsers] = useState([]);
     const [selectedProject, setSelectedProject] = useState(null); // For member editing
+    
+    // Modals
+    const [alertState, setAlertState] = useState({ isOpen: false, title: '', message: '', type: 'error' });
+    const [confirmState, setConfirmState] = useState({ isOpen: false, projectId: null });
 
     useEffect(() => {
         fetchProjects();
@@ -29,30 +35,40 @@ const ProjectManagement = () => {
             await api.post('/projects', { name: newProject });
             setNewProject('');
             fetchProjects();
+            setAlertState({ isOpen: true, title: 'Success', message: 'Project created successfully', type: 'success' });
         } catch (error) {
-            alert('Failed to create project');
+            setAlertState({ isOpen: true, title: 'Error', message: 'Failed to create project', type: 'error' });
         }
     };
 
-    const handleDeleteProject = async (id) => {
-        if (window.confirm('Delete project?')) {
-            await api.delete(`/projects/${id}`);
+    const handleDeleteClick = (id) => {
+        setConfirmState({ isOpen: true, projectId: id });
+    };
+
+    const confirmDelete = async () => {
+        if (!confirmState.projectId) return;
+        try {
+            await api.delete(`/projects/${confirmState.projectId}`);
             fetchProjects();
+            setAlertState({ isOpen: true, title: 'Success', message: 'Project deleted', type: 'success' });
+        } catch (error) {
+             setAlertState({ isOpen: true, title: 'Error', message: 'Failed to delete project', type: 'error' });
+        } finally {
+            setConfirmState({ isOpen: false, projectId: null });
         }
     };
 
     const handleAddMember = async (projectId, userId) => {
         try {
             await api.put(`/projects/${projectId}/members`, { userId });
-            fetchProjects(); // Refresh to show new count
-            // Ideally update local state or re-fetch specific project
+            fetchProjects(); 
             if(selectedProject && selectedProject._id === projectId) {
-                // simple refresh
                 const p = (await api.get('/projects')).data.find(p => p._id === projectId);
                 setSelectedProject(p);
             }
+            // Optional: Success modal could be annoying here if adding many users
         } catch (error) {
-            alert('Failed to add member');
+            setAlertState({ isOpen: true, title: 'Error', message: 'Failed to add member', type: 'error' });
         }
     };
 
@@ -65,7 +81,7 @@ const ProjectManagement = () => {
                 setSelectedProject(p);
             }
         } catch (error) {
-             alert('Failed to remove member');
+             setAlertState({ isOpen: true, title: 'Error', message: 'Failed to remove member', type: 'error' });
         }
     }
 
@@ -116,7 +132,7 @@ const ProjectManagement = () => {
                                     </div>
                                 </td>
                                 <td style={{ padding: '1rem' }}>
-                                     <button onClick={() => handleDeleteProject(project._id)} style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '0.5rem' }}>
+                                     <button onClick={() => handleDeleteClick(project._id)} style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '0.5rem' }}>
                                             <Trash2 size={18} />
                                     </button>
                                 </td>
@@ -146,6 +162,24 @@ const ProjectManagement = () => {
                     </div>
                 </div>
             )}
+
+            <AlertModal 
+                isOpen={alertState.isOpen} 
+                onClose={() => setAlertState(prev => ({ ...prev, isOpen: false }))}
+                title={alertState.title}
+                message={alertState.message}
+                type={alertState.type}
+            />
+
+            <ConfirmModal 
+                isOpen={confirmState.isOpen}
+                onClose={() => setConfirmState(prev => ({ ...prev, isOpen: false }))}
+                onConfirm={confirmDelete}
+                title="Delete Project?"
+                message="Are you sure you want to delete this project? This will remove all files and cannot be undone."
+                confirmText="Delete Project"
+                isDanger={true}
+            />
         </div>
     );
 };
