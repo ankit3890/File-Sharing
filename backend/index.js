@@ -35,9 +35,18 @@ app.use('/api/files', require('./routes/fileRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/attendance', require('./routes/attendanceRoutes'));
 
-// API Health Check (Moved from root to avoid conflict with UI)
+// API Health Check
 app.get('/api/health', (req, res) => {
     res.send('API is running successfully.');
+});
+
+// Root Informational Route
+app.get('/', (req, res) => {
+    res.status(200).json({ 
+        status: 'Online', 
+        message: 'File Sharing API is running.',
+        frontend: process.env.FRONTEND_URL || 'Check Vercel Dashboard'
+    });
 });
 
 // Serve Static Assets in Production - DISABLED for Split Deployment
