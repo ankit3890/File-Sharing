@@ -7,8 +7,11 @@ const User = require('../models/User');
 const markAttendance = async (req, res, next) => {
     try {
         const userId = req.user._id;
+        
+        // Use IST (Asia/Kolkata) as the standard timezone for this system
         const now = new Date();
-        const date = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`; // Local date YYYY-MM-DD
+        const istDateStr = now.toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }); // YYYY-MM-DD
+        const date = istDateStr; 
 
         const existing = await Attendance.findOne({ userId, date });
         if (existing) {
@@ -44,7 +47,7 @@ const getUserAttendance = async (req, res, next) => {
         
         // Generate virtual today record if missing
         const now = new Date();
-        const localToday = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+        const localToday = now.toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }); // YYYY-MM-DD
         
         // Check if today already exists in history
         const hasToday = attendance.some(rec => rec.date === localToday);
@@ -97,7 +100,7 @@ const getAllAttendance = async (req, res, next) => {
 
         const isAllUsersSelected = (!userId || userId === 'all');
         const now = new Date();
-        const localToday = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+        const localToday = now.toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }); // YYYY-MM-DD
         const effectiveStartDate = startDate || localToday;
         const effectiveEndDate = endDate || effectiveStartDate;
 
