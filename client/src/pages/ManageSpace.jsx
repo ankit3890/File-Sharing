@@ -128,7 +128,7 @@ const ManageSpace = () => {
                     </div>
                     <button 
                         onClick={handleViewLargeFiles}
-                        style={{ background: 'none', border: 'none', color: '#3b82f6', fontSize: '0.85rem', cursor: 'pointer', padding: '0.25rem 0.5rem', borderRadius: '4px', background: 'rgba(59, 130, 246, 0.1)' }}
+                        style={{ border: 'none', color: '#3b82f6', fontSize: '0.85rem', cursor: 'pointer', padding: '0.25rem 0.5rem', borderRadius: '4px', background: 'rgba(59, 130, 246, 0.1)' }}
                     >
                         View Large Files
                     </button>
