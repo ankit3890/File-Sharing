@@ -388,7 +388,7 @@ const Attendance = () => {
                                     Status: Rejected
                                 </div>
                             </div>
-                        )
+                        )}
                     </motion.div>
 
                     {/* Monthly Summary */}
