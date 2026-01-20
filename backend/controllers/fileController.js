@@ -5,6 +5,7 @@ const crypto = require('crypto');
 const mongoose = require('mongoose');
 const { Readable } = require('stream');
 const jwt = require('jsonwebtoken');
+const connectDB = require('../config/db');
 
 // Encryption Settings
 const ALGORITHM = 'aes-256-cbc';
@@ -16,8 +17,17 @@ console.log('Secret used:', SECRET === 'fallback_secret' ? 'FALLBACK' : 'ENV_VAR
 console.log('Key Hash:', crypto.createHash('md5').update(ENCRYPTION_KEY).digest('hex'));
 console.log('------------------------'); 
 
-// Helper to get GridFS Bucket
-const getBucket = () => {
+// Helper to get GridFS Bucket with Connection Check
+const getBucket = async () => {
+    if (mongoose.connection.readyState !== 1) {
+        console.log('[GridFS] Database not ready, reconnecting...');
+        await connectDB();
+    }
+    // Double check after connect attempt
+    if (!mongoose.connection.db) {
+         // Attempt to wait a moment? Or just throw.
+         throw new Error('Database connection failed - cannot create GridFSBucket');
+    }
     return new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
         bucketName: 'uploads'
     });
@@ -35,28 +45,24 @@ const uploadFile = async (req, res, next) => {
         const { projectId, description } = req.body;
         const fileSize = req.file.size;
 
-        // 1. Check Project Membership
         const project = await Project.findById(projectId);
         if (!project) return res.status(404).json({ message: 'Project not found' });
         if (!project.members.includes(req.user._id) && req.user.role !== 'admin') {
              return res.status(403).json({ message: 'Not a member of this project' });
         }
 
-        // 2. Check User Storage Limit (100MB)
         const STORAGE_LIMIT = 100 * 1024 * 1024;
         const user = await User.findById(req.user._id);
         if (user.storageUsed + fileSize > STORAGE_LIMIT) {
             return res.status(400).json({ message: 'Storage limit exceeded (100MB)' });
         }
 
-        // 3. Encrypt and Save to GridFS
         const iv = crypto.randomBytes(16);
         const filename = `${Date.now()}-${req.file.originalname}`;
         
         const cipher = crypto.createCipheriv(ALGORITHM, ENCRYPTION_KEY, iv);
-        const bucket = getBucket();
+        const bucket = await getBucket();
         
-        // Create Upload Stream
         const uploadStream = bucket.openUploadStream(filename, {
             metadata: {
                 originalName: req.file.originalname,
@@ -66,14 +72,12 @@ const uploadFile = async (req, res, next) => {
             }
         });
 
-        // Readable Stream from Buffer
         const bufferStream = new Readable();
         bufferStream.push(req.file.buffer);
-        bufferStream.push(null); // End of stream
+        bufferStream.push(null); 
 
         console.log(`[UPLOAD] Streaming encrypted ${filename} to GridFS`);
 
-        // Pipe: Buffer -> Cipher -> GridFS
         bufferStream
             .pipe(cipher)
             .pipe(uploadStream)
@@ -84,12 +88,11 @@ const uploadFile = async (req, res, next) => {
             .on('finish', async () => {
                 console.log(`[UPLOAD] Finished: ${uploadStream.id}`);
 
-                // 4. Update Database (Metadata)
                 const newFile = await File.create({
                     filename: filename,
                     originalName: req.file.originalname,
-                    gridFsId: uploadStream.id, // Store GridFS ID
-                    path: 'GRIDFS', // Placeholder
+                    gridFsId: uploadStream.id,
+                    path: 'GRIDFS', 
                     size: fileSize,
                     mimetype: req.file.mimetype,
                     iv: iv.toString('hex'),
@@ -98,7 +101,6 @@ const uploadFile = async (req, res, next) => {
                     description: description || ''
                 });
 
-                // Update User Storage
                 user.storageUsed += fileSize;
                 await user.save();
 
@@ -119,9 +121,7 @@ const uploadFile = async (req, res, next) => {
     }
 };
 
-// @desc    Generate Download Token
-// @route   GET /api/files/:id/download_token
-// @access  Private
+// @desc    Generate Download Token (No changes needed)
 const getDownloadToken = async (req, res, next) => {
     try {
         const file = await File.findById(req.params.id);
@@ -146,8 +146,6 @@ const getDownloadToken = async (req, res, next) => {
 };
 
 // @desc    Download/Preview File (Stream)
-// @route   GET /api/files/download/:token
-// @access  Public (protected by token)
 const downloadFile = async (req, res, next) => {
     try {
         const { token } = req.params;
@@ -164,15 +162,18 @@ const downloadFile = async (req, res, next) => {
         if (!file) return res.status(404).send('File not found');
 
         if (!file.gridFsId) {
-             // Fallback for legacy local files (won't work on Vercel but good for local dev history)
              return res.status(500).send('Legacy file system storage not supported in this environment');
         }
 
-        const bucket = getBucket();
+        const bucket = await getBucket();
         
-        // Check if file exists in GridFS
-        // const files = await bucket.find({ _id: file.gridFsId }).toArray();
-        // if (!files.length) return res.status(404).send('File content missing in Storage');
+        // Ensure file exists in bucket before opening stream
+        // Note: bucket.find returns a Cursor.
+        const fileDocs = await bucket.find({ _id: file.gridFsId }).toArray();
+        if (!fileDocs || fileDocs.length === 0) {
+            console.error(`[DOWNLOAD] GridFS Missing File: ${file.gridFsId} for ${file.filename}`);
+            return res.status(404).send('File content not found in storage');
+        }
 
         const iv = Buffer.from(file.iv, 'hex');
         const decipher = crypto.createDecipheriv(ALGORITHM, ENCRYPTION_KEY, iv);
@@ -200,8 +201,6 @@ const downloadFile = async (req, res, next) => {
 };
 
 // @desc    Get Files for Project
-// @route   GET /api/files/project/:projectId
-// @access  Private
 const getProjectFiles = async (req, res, next) => {
     try {
         const { projectId } = req.params;
@@ -222,8 +221,6 @@ const getProjectFiles = async (req, res, next) => {
 };
 
 // @desc    Delete File
-// @route   DELETE /api/files/:id
-// @access  Private (Owner or Admin)
 const deleteFile = async (req, res, next) => {
     try {
         const file = await File.findById(req.params.id);
@@ -234,7 +231,6 @@ const deleteFile = async (req, res, next) => {
         }
 
         if (req.user.role === 'admin' && file.uploader.toString() !== req.user._id.toString()) {
-            // Soft Delete for Admin
             file.deletedByAdmin = true;
             await file.save();
              if (req.logAction) {
@@ -247,9 +243,8 @@ const deleteFile = async (req, res, next) => {
             }
              res.json({ message: 'File marked as deleted by admin' });
         } else {
-             // Hard Delete
              if (file.gridFsId) {
-                 const bucket = getBucket();
+                 const bucket = await getBucket();
                  try {
                      await bucket.delete(file.gridFsId);
                  } catch (err) {
@@ -257,7 +252,6 @@ const deleteFile = async (req, res, next) => {
                  }
              }
 
-             // Storage Update
             const uploader = await User.findById(file.uploader);
             if (uploader) {
                 uploader.storageUsed = Math.max(0, uploader.storageUsed - file.size);
@@ -283,8 +277,6 @@ const deleteFile = async (req, res, next) => {
 };
 
 // @desc    Update File Metadata
-// @route   PUT /api/files/:id
-// @access  Private
 const updateFile = async (req, res, next) => {
     try {
         const { description } = req.body;
@@ -314,8 +306,6 @@ const updateFile = async (req, res, next) => {
 };
 
 // @desc    Preview File (Stream)
-// @route   GET /api/files/:id/preview
-// @access  Private
 const getPreview = async (req, res, next) => {
     try {
         const file = await File.findById(req.params.id);
@@ -331,7 +321,14 @@ const getPreview = async (req, res, next) => {
              return res.status(500).send('Legacy file system storage not supported');
         }
 
-        const bucket = getBucket();
+        const bucket = await getBucket();
+
+        const fileDocs = await bucket.find({ _id: file.gridFsId }).toArray();
+        if (!fileDocs || fileDocs.length === 0) {
+            console.error(`[PREVIEW] GridFS Missing File: ${file.gridFsId}`);
+            return res.status(404).send('File content missing');
+        }
+
         const iv = Buffer.from(file.iv, 'hex');
         const decipher = crypto.createDecipheriv(ALGORITHM, ENCRYPTION_KEY, iv);
         const downloadStream = bucket.openDownloadStream(file.gridFsId);
@@ -352,9 +349,6 @@ const getPreview = async (req, res, next) => {
     }
 };
 
-// @desc    Get Files for Current User
-// @route   GET /api/files/mine
-// @access  Private
 const getUserFiles = async (req, res, next) => {
     try {
         const files = await File.find({ uploader: req.user._id }).sort({ uploadedAt: -1 }).populate('uploader', 'userId');
@@ -364,9 +358,6 @@ const getUserFiles = async (req, res, next) => {
     }
 };
 
-// @desc    Delete All User Files
-// @route   DELETE /api/files/mine
-// @access  Private
 const deleteAllUserFiles = async (req, res, next) => {
     try {
         const { password } = req.body;
@@ -377,7 +368,7 @@ const deleteAllUserFiles = async (req, res, next) => {
         }
 
         const files = await File.find({ uploader: req.user._id });
-        const bucket = getBucket();
+        const bucket = await getBucket();
 
         for (const file of files) {
             if (file.gridFsId) {
