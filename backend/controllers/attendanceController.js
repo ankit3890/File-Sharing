@@ -41,6 +41,31 @@ const markAttendance = async (req, res, next) => {
 const getUserAttendance = async (req, res, next) => {
     try {
         const attendance = await Attendance.find({ userId: req.user._id }).sort({ date: -1 });
+        
+        // Generate virtual today record if missing
+        const now = new Date();
+        const localToday = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+        
+        // Check if today already exists in history
+        const hasToday = attendance.some(rec => rec.date === localToday);
+        
+        if (!hasToday) {
+            const dateObj = new Date(localToday);
+            const isSunday = dateObj.getDay() === 0;
+            
+            attendance.unshift({
+                _id: `virtual-${req.user._id}-${localToday}`,
+                userId: { _id: req.user._id, userId: req.user.userId },
+                date: localToday,
+                status: 'not_marked',
+                isVirtual: true,
+                isSunday
+            });
+            
+            // Sort again just in case (though unshift puts it at top which is usually today)
+            attendance.sort((a, b) => b.date.localeCompare(a.date));
+        }
+
         res.json(attendance);
     } catch (error) {
         next(error);
