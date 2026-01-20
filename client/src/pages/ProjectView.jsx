@@ -23,6 +23,13 @@ const ProjectView = () => {
     const [isEditingProject, setIsEditingProject] = useState(false);
     const [editDesc, setEditDesc] = useState('');
     const [editName, setEditName] = useState('');
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     const handleEditProject = () => {
         setEditName(project.name || '');
@@ -37,7 +44,8 @@ const ProjectView = () => {
             setIsEditingProject(false);
         } catch (error) {
             console.error('Failed to update project:', error);
-            alert('Failed to update project details');
+            const msg = error.response?.data?.message || 'Failed to update project details';
+            alert(msg);
         }
     };
 
@@ -127,7 +135,14 @@ const ProjectView = () => {
     return (
         <div style={{ padding: '1rem', height: 'calc(100vh - 100px)', display: 'flex', flexDirection: 'column' }}>
             {/* Header */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+            <div style={{ 
+                display: 'flex', 
+                flexDirection: isMobile ? 'column' : 'row',
+                justifyContent: 'space-between', 
+                alignItems: isMobile ? 'flex-start' : 'center', 
+                gap: isMobile ? '1rem' : 0,
+                marginBottom: '1.5rem' 
+            }}>
                 <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                         <h1 style={{ fontSize: '2rem', fontWeight: 'bold' }}>{project.name}</h1>
@@ -194,7 +209,14 @@ const ProjectView = () => {
                 </button>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '3fr 1fr', gap: '1.5rem', flex: 1, overflow: 'hidden' }}>
+            <div style={{ 
+                display: 'grid', 
+                gridTemplateColumns: isMobile ? '1fr' : '3fr 1fr', 
+                gap: '1.5rem', 
+                flex: 1, 
+                overflow: isMobile ? 'auto' : 'hidden',
+                gridTemplateRows: isMobile ? 'auto 1fr' : '1fr' 
+            }}>
                 
                 {/* File List (Vertical) */}
                 <div className="glass" style={{ borderRadius: '1rem', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
