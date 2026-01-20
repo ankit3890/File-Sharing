@@ -32,25 +32,10 @@ app.use('/api/files', require('./routes/fileRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/attendance', require('./routes/attendanceRoutes'));
 
-// Health Check
-app.get('/', (req, res) => {
+// API Health Check (Moved from root to avoid conflict with UI)
+app.get('/api/health', (req, res) => {
     res.send('API is running successfully.');
 });
-
-// Error Handling Middleware
-app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).json({
-        message: err.message || 'Server Error',
-        stack: process.env.NODE_ENV === 'production' ? null : err.stack
-    });
-});
-
-const PORT = process.env.PORT || 5000;
-
-if (require.main === module) {
-    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-}
 
 // Serve Static Assets in Production
 if (process.env.NODE_ENV === 'production') {
