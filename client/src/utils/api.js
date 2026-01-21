@@ -41,6 +41,23 @@ api.interceptors.response.use(
                 window.location.href = '/login';
             }
         }
+
+        // Retry logic for 502/503/504 or Network Error (likely cold start)
+        const config = error.config;
+        if (!config || !config.retry) {
+            config.retry = 0;
+        }
+
+        // Retry up to 2 times for network errors or 5xx server errors
+        if (config.retry < 2 && (!error.response || (error.response.status >= 500 && error.response.status < 600))) {
+            config.retry += 1;
+            console.log(`Retrying request found error (Attempt ${config.retry})...`);
+            
+            // Wait 2 seconds before retrying
+            const backoff = new Promise(resolve => setTimeout(resolve, 2000));
+            return backoff.then(() => api(config));
+        }
+
         return Promise.reject(error);
     }
 );
