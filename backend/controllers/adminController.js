@@ -31,6 +31,11 @@ const getLogs = async (req, res, next) => {
 
         if (scope === 'system') {
             query.project = null;
+            query.action = { $not: /ATTENDANCE/ }; // Exclude attendance from system logs if they overlap
+        }
+
+        if (scope === 'attendance') {
+            query.action = /ATTENDANCE/;
         }
 
         // Project dropdown filter
@@ -76,10 +81,11 @@ const getStats = async (req, res, next) => {
         const storageBytes = totalStorage[0]?.total || 0;
 
         // LOG CARDS
-        const [totalLogs, projectLogs, systemLogs] = await Promise.all([
+        const [totalLogs, projectLogs, systemLogs, attendanceLogs] = await Promise.all([
             Log.countDocuments({}),
             Log.countDocuments({ project: { $ne: null } }),
-            Log.countDocuments({ project: null })
+            Log.countDocuments({ project: null, action: { $not: /ATTENDANCE/ } }),
+            Log.countDocuments({ action: /ATTENDANCE/ })
         ]);
 
         res.json({
@@ -93,7 +99,8 @@ const getStats = async (req, res, next) => {
             logs: {
                 total: totalLogs,
                 project: projectLogs,
-                system: systemLogs
+                system: systemLogs,
+                attendance: attendanceLogs
             }
         });
     } catch (error) {
@@ -122,6 +129,14 @@ const impersonateUser = async (req, res, next) => {
             process.env.JWT_SECRET,
             { expiresIn: '1h' }
         );
+
+        if (req.logAction) {
+            await req.logAction({
+                action: 'IMPERSONATE_USER',
+                targetUser: user._id,
+                details: `Admin ${req.user.userId} is now impersonating ${user.userId}`
+            });
+        }
 
         res.json({
             _id: user._id,

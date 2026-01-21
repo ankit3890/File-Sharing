@@ -13,7 +13,7 @@ import ResetPassword from './pages/ResetPassword';
 import { warmUpServer } from './utils/warmup';
 import api from './utils/api';
 import SkeletonLoader from './components/SkeletonLoader';
-
+import UserDashboard from './pages/Dashboard/UserDashboard';
 const AdminRoute = ({ children }) => {
     const { user } = useAuth();
     if (!user) return <Navigate to="/login" />;
@@ -22,7 +22,7 @@ const AdminRoute = ({ children }) => {
     if (user.mustChangePassword) return <Navigate to="/reset-password" />;
     
     if (user && user.role === 'admin') return children;
-    return <Navigate to="/projects" />;
+    return <Navigate to="/dashboard" />;
 };
 
 const ProtectedRoute = ({ children, forceAllowed }) => {
@@ -56,8 +56,8 @@ const AppRoutes = () => {
                 } />
                 
                 <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-                    <Route index element={<Navigate to="/projects" />} />
-                    <Route path="dashboard" element={<Navigate to="/projects" replace />} />
+                    <Route index element={<Navigate to="/dashboard" />} />
+                    <Route path="dashboard" element={<UserDashboard />} />
                     <Route path="projects" element={<Projects />} />
                     <Route path="projects/:id" element={<ProjectView />} />
                     <Route path="manage-space" element={<ManageSpace />} />

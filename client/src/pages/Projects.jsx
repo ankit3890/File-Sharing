@@ -36,22 +36,30 @@ const Projects = () => {
     }
 
     return (
-        <div>
-            <h2 style={{ fontSize: '1.5rem', marginBottom: '2rem' }}>
-                My Projects
-            </h2>
+        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 800 }}>My Projects</h2>
+                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#94a3b8', background: 'rgba(255,255,255,0.05)', padding: '0.3rem 0.75rem', borderRadius: '1rem' }}>
+                    {projects.length} TOTAL PROJECTS
+                </span>
+            </div>
 
             {projects.length === 0 ? (
                 <div
                     className="glass"
                     style={{
-                        padding: '2rem',
+                        padding: '4rem 2rem',
                         borderRadius: '1rem',
                         textAlign: 'center',
-                        color: '#94a3b8'
+                        color: '#475569',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: '1rem'
                     }}
                 >
-                    No projects assigned yet
+                    <Folder size={48} strokeWidth={1} style={{ opacity: 0.2 }} />
+                    <p>No projects assigned to your account yet.</p>
                 </div>
             ) : (
                 <div

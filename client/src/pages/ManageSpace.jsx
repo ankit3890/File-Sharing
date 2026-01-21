@@ -95,7 +95,7 @@ const ManageSpace = () => {
     };
 
     return (
-        <div>
+        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
             <h2 style={{ fontSize: '1.5rem', marginBottom: '2rem' }}>Manage Storage</h2>
             
             <div className="glass" style={{ padding: '2rem', borderRadius: '1rem', maxWidth: '600px', marginBottom: '2rem', position: 'relative' }}>
@@ -152,36 +152,45 @@ const ManageSpace = () => {
                 )}
             </div>
 
-            <div id="files-table" className="glass" style={{ borderRadius: '0.5rem', overflow: 'hidden', overflowX: 'auto' }}>
+            <div id="files-table" className="glass" style={{ borderRadius: '1rem', overflow: 'hidden', overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead>
-                        <tr style={{ background: 'rgba(255,255,255,0.05)', textAlign: 'left', color: '#94a3b8' }}>
-                            <th style={{ padding: '1rem' }}>Name</th>
-                            <th style={{ padding: '1rem' }}>Uploader</th>
-                            <th style={{ padding: '1rem' }}>Size</th>
-                            <th style={{ padding: '1rem' }}>Date</th>
-                            <th style={{ padding: '1rem' }}>Actions</th>
+                        <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.05)', textAlign: 'left', color: '#64748b' }}>
+                            <th style={{ padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Name</th>
+                            <th style={{ padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Uploader</th>
+                            <th style={{ padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Size</th>
+                            <th style={{ padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Date</th>
+                            <th style={{ padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.1em', textAlign: 'right' }}>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {files.map(file => (
-                            <tr key={file._id} style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                                <td style={{ padding: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                    <File size={16} className="text-blue-400" />
-                                    <span>{file.originalName}</span>
+                            <tr key={file._id} style={{ borderBottom: '1px solid rgba(255,255,255,0.02)', transition: 'background 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'} onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}>
+                                <td style={{ padding: '1rem 1.5rem' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                        <File size={16} className="text-blue-400" />
+                                        <span style={{ fontWeight: '700', color: '#f1f5f9', fontSize: '0.95rem' }}>{file.originalName}</span>
+                                    </div>
                                 </td>
-                                <td style={{ padding: '1rem', color: '#cbd5e1' }}>{file.uploader?.userId || 'Unknown'}</td>
-                                <td style={{ padding: '1rem', color: '#94a3b8' }}>{(file.size / 1024).toFixed(1)} KB</td>
-                                <td style={{ padding: '1rem', color: '#94a3b8' }}>{new Date(file.uploadedAt).toLocaleDateString()}</td>
-                                <td style={{ padding: '1rem', display: 'flex', gap: '0.5rem' }}>
-                                    <button onClick={() => setSelectedFile(file)} title="View" style={{ background: 'transparent', border: 'none', color: '#3b82f6', cursor: 'pointer' }}><Eye size={18} /></button>
-                                    <button onClick={() => handleDeleteClick(file._id)} title="Delete" style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer' }}><Trash2 size={18} /></button>
+                                <td style={{ padding: '1rem 1.5rem', color: '#cbd5e1' }}>{file.uploader?.userId || 'Unknown'}</td>
+                                <td style={{ padding: '1rem 1.5rem', color: '#94a3b8' }}>{(file.size / 1024).toFixed(1)} KB</td>
+                                <td style={{ padding: '1rem 1.5rem', color: '#94a3b8' }}>{new Date(file.uploadedAt).toLocaleDateString()}</td>
+                                <td style={{ padding: '1rem 1.5rem' }}>
+                                    <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                                        <button onClick={() => setSelectedFile(file)} title="View" style={{ background: 'transparent', border: 'none', color: '#3b82f6', cursor: 'pointer', padding: '8px', borderRadius: '8px', transition: 'all 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(59, 130, 246, 0.1)'} onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}><Eye size={18} /></button>
+                                        <button onClick={() => handleDeleteClick(file._id)} title="Delete" style={{ background: 'transparent', border: 'none', color: '#64748b', cursor: 'pointer', padding: '8px', borderRadius: '8px', transition: 'all 0.2s' }} onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'; e.currentTarget.style.color = '#ef4444'; }} onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#64748b'; }}><Trash2 size={18} /></button>
+                                    </div>
                                 </td>
                             </tr>
                         ))}
                         {files.length === 0 && (
                             <tr>
-                                <td colSpan="5" style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>No files found.</td>
+                                <td colSpan="5" style={{ padding: '4rem 2rem', textAlign: 'center', color: '#475569' }}>
+                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+                                        <File size={48} strokeWidth={1} style={{ opacity: 0.2 }} />
+                                        <p>No files found in your storage.</p>
+                                    </div>
+                                </td>
                             </tr>
                         )}
                     </tbody>
@@ -213,7 +222,7 @@ const ManageSpace = () => {
                 title="Delete File?"
                 message="Are you sure you want to delete this file? This action cannot be undone."
                 confirmText="Delete File"
-                isDanger={true}
+                variant="danger"
             />
         </div>
     );

@@ -20,6 +20,10 @@ const userSchema = new mongoose.Schema({
         type: Number, // in bytes
         default: 0
     },
+    storageLimit: {
+        type: Number, // in bytes
+        default: 100 * 1024 * 1024 // 100MB
+    },
     mustChangePassword: {
         type: Boolean,
         default: true

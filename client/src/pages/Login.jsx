@@ -22,7 +22,7 @@ const Login = () => {
         e.preventDefault();
         setError('');
         try {
-            await login(userId, password, rememberMe);
+            const userData = await login(userId, password, rememberMe);
             
             if (rememberMe) {
                 localStorage.setItem('savedUserId', userId);

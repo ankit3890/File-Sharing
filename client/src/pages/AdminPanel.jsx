@@ -1,8 +1,8 @@
 import React, { useState, lazy, Suspense } from 'react';
-import { Users, Folder, Activity } from 'lucide-react';
+import { Users, Folder, Activity, ShieldCheck } from 'lucide-react';
 import SkeletonLoader from '../components/SkeletonLoader';
 
-// Lazy load admin sections (IMPORTANT for bundle size)
+// Lazy load admin sections
 const UserManagement = lazy(() => import('../components/admin/UserManagement'));
 const ProjectManagement = lazy(() => import('../components/admin/ProjectManagement'));
 const LogViewer = lazy(() => import('../components/admin/LogViewer'));
@@ -24,31 +24,47 @@ const AdminPanel = () => {
     };
 
     const tabStyle = (tab) => ({
-        padding: '1rem',
+        padding: '0.75rem 1.25rem',
         background: 'transparent',
         border: 'none',
-        borderBottom: activeTab === tab ? '2px solid #3b82f6' : '2px solid transparent',
-        color: activeTab === tab ? '#3b82f6' : '#94a3b8',
+        borderBottom: activeTab === tab ? '3px solid #3b82f6' : '3px solid transparent',
+        color: activeTab === tab ? '#3b82f6' : '#64748b',
         cursor: 'pointer',
         display: 'flex',
         alignItems: 'center',
-        gap: '0.5rem',
-        fontWeight: 600,
+        gap: '0.6rem',
+        fontWeight: 700,
+        fontSize: '0.9rem',
+        whiteSpace: 'nowrap',
+        transition: 'all 0.2s ease',
+        opacity: activeTab === tab ? 1 : 0.7,
     });
 
     return (
-        <div>
-            {/* Tabs */}
+        <div style={{ maxWidth: '1200px', margin: '0 auto', paddingBottom: '3rem' }}>
+            {/* Admin Header */}
+            <div style={{ marginBottom: '2rem' }}>
+                <h2 style={{ fontSize: '1.75rem', fontWeight: 800, color: 'white', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <ShieldCheck size={28} className="text-blue-500" /> System Administration
+                </h2>
+                <p style={{ color: '#64748b', marginTop: '0.25rem' }}>Control users, projects, and security audit logs.</p>
+            </div>
+
+            {/* Tabs Container (Scrollable on mobile) */}
             <div
+                className="admin-tabs-scroll"
                 style={{
                     display: 'flex',
-                    gap: '1rem',
+                    gap: '0.5rem',
                     marginBottom: '2rem',
-                    borderBottom: '1px solid var(--border)',
+                    borderBottom: '1px solid rgba(255,255,255,0.05)',
+                    overflowX: 'auto',
+                    scrollbarWidth: 'none', // Hide scrollbar for Firefox
+                    msOverflowStyle: 'none' // Hide scrollbar for IE/Edge
                 }}
             >
                 <button onClick={() => setActiveTab('users')} style={tabStyle('users')}>
-                    <Users size={18} /> Users
+                    <Users size={18} /> User Management
                 </button>
 
                 <button onClick={() => setActiveTab('projects')} style={tabStyle('projects')}>
@@ -60,12 +76,32 @@ const AdminPanel = () => {
                 </button>
             </div>
 
-            {/* Content */}
-            <div style={{ animation: 'fadeIn 0.25s ease' }}>
+            {/* Content Slot */}
+            <div style={{ animation: 'fadeIn 0.3s ease-out' }}>
                 <Suspense fallback={<SkeletonLoader />}>
                     {renderTab()}
                 </Suspense>
             </div>
+
+            <style>{`
+                .admin-tabs-scroll::-webkit-scrollbar {
+                    display: none; /* Hide scrollbar for Chrome/Safari */
+                }
+                
+                @media (max-width: 768px) {
+                    .admin-tabs-scroll {
+                        margin-left: -1rem;
+                        margin-right: -1rem;
+                        padding-left: 1rem;
+                        padding-right: 1rem;
+                    }
+                }
+
+                @keyframes fadeIn {
+                    from { opacity: 0; transform: translateY(10px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+            `}</style>
         </div>
     );
 };

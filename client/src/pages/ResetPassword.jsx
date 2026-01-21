@@ -15,7 +15,7 @@ const ResetPassword = () => {
 
     useEffect(() => {
         if (user && !user.mustChangePassword) {
-            navigate('/projects');
+            navigate('/dashboard');
         }
     }, [user, navigate]);
 
@@ -39,7 +39,7 @@ const ResetPassword = () => {
                 ...res.data // Sync other data just in case
             });
             
-            navigate('/projects');
+            navigate('/dashboard');
         } catch (err) {
             setError(err.response?.data?.message || 'Failed to update password. Ensure you are using the default "123" as target.');
         } finally {

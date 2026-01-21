@@ -457,7 +457,7 @@ const Attendance = () => {
                             <select 
                                 value={filterUser} 
                                 onChange={(e) => setFilterUser(e.target.value)}
-                                style={{ width: '100%', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '0.6rem', borderRadius: '0.5rem', colorScheme: 'dark' }}
+                                style={{ width: '100%', height: '42px', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '0 1rem', borderRadius: '0.75rem', colorScheme: 'dark', fontSize: '0.9rem', fontWeight: '500' }}
                             >
                                 <option value="all" style={{ background: '#1e293b' }}>All Users</option>
                                 {users.map(u => <option key={u._id} value={u._id} style={{ background: '#1e293b' }}>{u.userId}</option>)}
@@ -468,7 +468,7 @@ const Attendance = () => {
                             <select 
                                 value={filterStatus} 
                                 onChange={(e) => setFilterStatus(e.target.value)}
-                                style={{ width: '100%', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '0.6rem', borderRadius: '0.5rem', colorScheme: 'dark' }}
+                                style={{ width: '100%', height: '42px', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '0 1rem', borderRadius: '0.75rem', colorScheme: 'dark', fontSize: '0.9rem', fontWeight: '500' }}
                             >
                                 <option value="all" style={{ background: '#1e293b' }}>All Status</option>
                                 <option value="pending" style={{ background: '#1e293b' }}>Pending</option>
@@ -492,7 +492,7 @@ const Attendance = () => {
                                         end: (f.end && val > f.end) ? val : f.end
                                     }));
                                 }}
-                                style={{ width: '100%', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '0.6rem', borderRadius: '0.5rem', colorScheme: 'dark' }}
+                                style={{ width: '100%', height: '42px', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '0 1rem', borderRadius: '0.75rem', colorScheme: 'dark', fontSize: '0.9rem', fontWeight: '500' }}
                             />
                         </div>
                         <div style={{ flex: 1, minWidth: '150px' }}>
@@ -510,13 +510,13 @@ const Attendance = () => {
                                         start: (f.start && val < f.start) ? val : f.start
                                     }));
                                 }}
-                                style={{ width: '100%', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '0.6rem', borderRadius: '0.5rem', colorScheme: 'dark' }}
+                                style={{ width: '100%', height: '42px', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '0 1rem', borderRadius: '0.75rem', colorScheme: 'dark', fontSize: '0.9rem', fontWeight: '500' }}
                             />
                         </div>
                         <button 
                             onClick={handleResetFilters}
                             title="Reset all filters"
-                            style={{ padding: '0.6rem 1.25rem', borderRadius: '0.5rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#94a3b8', cursor: 'pointer', transition: 'all 0.2s' }}
+                            style={{ height: '42px', padding: '0 1.5rem', borderRadius: '0.75rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#94a3b8', cursor: 'pointer', transition: 'all 0.2s', fontSize: '0.9rem', fontWeight: '800' }}
                             onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = 'white'; }}
                             onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = '#94a3b8'; }}
                         >

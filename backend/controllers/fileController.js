@@ -51,10 +51,10 @@ const uploadFile = async (req, res, next) => {
              return res.status(403).json({ message: 'Not a member of this project' });
         }
 
-        const STORAGE_LIMIT = 100 * 1024 * 1024;
         const user = await User.findById(req.user._id);
+        const STORAGE_LIMIT = user.storageLimit || (100 * 1024 * 1024);
         if (user.storageUsed + fileSize > STORAGE_LIMIT) {
-            return res.status(400).json({ message: 'Storage limit exceeded (100MB)' });
+            return res.status(400).json({ message: `Storage limit exceeded (${(STORAGE_LIMIT/1024/1024).toFixed(0)}MB)` });
         }
 
         const iv = crypto.randomBytes(16);

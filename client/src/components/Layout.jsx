@@ -83,6 +83,10 @@ const Layout = () => {
             >
                 {/* Nav */}
                 <nav style={{ flex: 1, padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', overflowY: 'auto', scrollbarWidth: 'none', whiteSpace: 'nowrap' }}>
+                    <NavLink to="/dashboard" className={navItemClass} style={navItemStyle} title="Dashboard" onClick={handleNavClick}>
+                        <LayoutDashboard size={20} /> 
+                        <span>Dashboard</span>
+                    </NavLink>
                     <NavLink to="/projects" className={navItemClass} style={navItemStyle} title="Projects" onClick={handleNavClick}>
                         <FileText size={20} /> 
                         <span>Projects</span>
