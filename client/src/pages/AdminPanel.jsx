@@ -27,8 +27,8 @@ const AdminPanel = () => {
         padding: '0.75rem 1.25rem',
         background: 'transparent',
         border: 'none',
-        borderBottom: activeTab === tab ? '3px solid #3b82f6' : '3px solid transparent',
-        color: activeTab === tab ? '#3b82f6' : '#64748b',
+        borderBottom: activeTab === tab ? '3px solid #ffffff' : '3px solid transparent',
+        color: activeTab === tab ? '#ffffff' : '#64748b',
         cursor: 'pointer',
         display: 'flex',
         alignItems: 'center',
@@ -45,7 +45,7 @@ const AdminPanel = () => {
             {/* Admin Header */}
             <div style={{ marginBottom: '2rem' }}>
                 <h2 style={{ fontSize: '1.75rem', fontWeight: 800, color: 'white', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                    <ShieldCheck size={28} className="text-blue-500" /> System Administration
+                    <ShieldCheck size={28} className="text-white" /> System Administration
                 </h2>
                 <p style={{ color: '#64748b', marginTop: '0.25rem' }}>Control users, projects, and security audit logs.</p>
             </div>

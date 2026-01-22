@@ -50,7 +50,7 @@ const ResetPassword = () => {
     };
 
     return (
-        <div className="center-screen" style={{ background: 'radial-gradient(circle at top right, #1e1b4b, #0f172a)' }}>
+        <div className="center-screen" style={{ background: 'radial-gradient(circle at top right, #27272a, #000000)' }}>
             <motion.div 
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
@@ -58,8 +58,8 @@ const ResetPassword = () => {
                 style={{ width: '100%', maxWidth: '450px', padding: '3rem', borderRadius: '1.5rem' }}
             >
                 <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
-                    <div style={{ background: 'rgba(59, 130, 246, 0.1)', width: '70px', height: '70px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
-                        <ShieldCheck color="#3b82f6" size={40} />
+                    <div style={{ background: 'rgba(255, 255, 255, 0.1)', width: '70px', height: '70px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+                        <ShieldCheck color="#ffffff" size={40} />
                     </div>
                     <h1 style={{ fontSize: '1.8rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>Security Required</h1>
                     <p style={{ color: '#94a3b8' }}>For your security, you must change your default password before accessing the workspace.</p>

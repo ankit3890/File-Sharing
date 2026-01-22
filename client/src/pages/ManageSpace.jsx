@@ -100,7 +100,7 @@ const ManageSpace = () => {
             
             <div className="glass" style={{ padding: '2rem', borderRadius: '1rem', maxWidth: '600px', marginBottom: '2rem', position: 'relative' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
-                    <div style={{ padding: '1rem', background: `rgba(${percentage >= 90 ? '239, 68, 68' : percentage >= 70 ? '234, 179, 8' : '59, 130, 246'}, 0.1)`, borderRadius: '50%' }}>
+                    <div style={{ padding: '1rem', background: `rgba(${percentage >= 90 ? '239, 68, 68' : percentage >= 70 ? '234, 179, 8' : '255, 255, 255'}, 0.1)`, borderRadius: '50%' }}>
                         <HardDrive size={32} style={{ color: getStorageColor() }} />
                     </div>
                     <div>
@@ -128,7 +128,7 @@ const ManageSpace = () => {
                     </div>
                     <button 
                         onClick={handleViewLargeFiles}
-                        style={{ border: 'none', color: '#3b82f6', fontSize: '0.85rem', cursor: 'pointer', padding: '0.25rem 0.5rem', borderRadius: '4px', background: 'rgba(59, 130, 246, 0.1)' }}
+                        style={{ border: 'none', color: '#cbd5e1', fontSize: '0.85rem', cursor: 'pointer', padding: '0.25rem 0.5rem', borderRadius: '4px', background: 'rgba(255, 255, 255, 0.1)' }}
                     >
                         View Large Files
                     </button>
@@ -139,7 +139,7 @@ const ManageSpace = () => {
                 <div>
                     <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>My Files ({files.length})</h3>
                     {user?.role === 'admin' && (
-                        <p style={{ fontSize: '0.8rem', color: '#60a5fa', marginTop: '0.25rem' }}>Viewing storage for Admin account</p>
+                        <p style={{ fontSize: '0.8rem', color: '#fff', marginTop: '0.25rem' }}>Viewing storage for Admin account</p>
                     )}
                 </div>
                 {files.length > 0 && (
@@ -168,7 +168,7 @@ const ManageSpace = () => {
                             <tr key={file._id} style={{ borderBottom: '1px solid rgba(255,255,255,0.02)', transition: 'background 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'} onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}>
                                 <td style={{ padding: '1rem 1.5rem' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                        <File size={16} className="text-blue-400" />
+                                        <File size={16} className="text-white" />
                                         <span style={{ fontWeight: '700', color: '#f1f5f9', fontSize: '0.95rem' }}>{file.originalName}</span>
                                     </div>
                                 </td>
@@ -177,7 +177,7 @@ const ManageSpace = () => {
                                 <td style={{ padding: '1rem 1.5rem', color: '#94a3b8' }}>{new Date(file.uploadedAt).toLocaleDateString()}</td>
                                 <td style={{ padding: '1rem 1.5rem' }}>
                                     <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-                                        <button onClick={() => setSelectedFile(file)} title="View" style={{ background: 'transparent', border: 'none', color: '#3b82f6', cursor: 'pointer', padding: '8px', borderRadius: '8px', transition: 'all 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(59, 130, 246, 0.1)'} onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}><Eye size={18} /></button>
+                                        <button onClick={() => setSelectedFile(file)} title="View" style={{ background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: '8px', borderRadius: '8px', transition: 'all 0.2s' }} onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'; e.currentTarget.style.color = 'white'; }} onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#94a3b8'; }}><Eye size={18} /></button>
                                         <button onClick={() => handleDeleteClick(file._id)} title="Delete" style={{ background: 'transparent', border: 'none', color: '#64748b', cursor: 'pointer', padding: '8px', borderRadius: '8px', transition: 'all 0.2s' }} onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'; e.currentTarget.style.color = '#ef4444'; }} onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#64748b'; }}><Trash2 size={18} /></button>
                                     </div>
                                 </td>

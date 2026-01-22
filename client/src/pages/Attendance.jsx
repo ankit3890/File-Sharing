@@ -539,7 +539,7 @@ const Attendance = () => {
                         padding: '1rem', 
                         borderBottom: '1px solid rgba(255,255,255,0.05)',
                         margin: selectedIds.length > 0 ? '0 1rem 1rem' : '0',
-                        backgroundColor: selectedIds.length > 0 ? 'rgba(30, 41, 59, 0.95)' : 'transparent',
+                        backgroundColor: selectedIds.length > 0 ? 'rgba(20, 20, 20, 0.95)' : 'transparent',
                         backdropFilter: 'blur(10px)',
                         borderRadius: selectedIds.length > 0 ? '0.75rem' : '1rem 1rem 0 0',
                         boxShadow: selectedIds.length > 0 ? '0 10px 15px -3px rgba(0, 0, 0, 0.3)' : 'none',
@@ -555,7 +555,7 @@ const Attendance = () => {
                                 style={{ width: '1.2rem', height: '1.2rem', cursor: 'pointer' }}
                             />
                         )}
-                        <span style={{ fontSize: '0.9rem', color: selectedIds.length > 0 ? '#3b82f6' : '#94a3b8', fontWeight: selectedIds.length > 0 ? 'bold' : 'normal' }}>
+                        <span style={{ fontSize: '0.9rem', color: selectedIds.length > 0 ? '#ffffff' : '#94a3b8', fontWeight: selectedIds.length > 0 ? 'bold' : 'normal' }}>
                             {user.role === 'admin' ? (selectedIds.length > 0 ? `${selectedIds.length} records selected` : 'Select records for bulk actions') : 'Your attendance history'}
                         </span>
                     </div>

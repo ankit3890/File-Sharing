@@ -170,7 +170,7 @@ const UploadWidget = ({ projectId, onUploadComplete, initialFile }) => {
                                 initial={{ width: 0 }}
                                 animate={{ width: `${uploadProgress}%` }}
                                 transition={{ type: 'spring', stiffness: 100, damping: 20 }}
-                                style={{ height: '100%', background: '#3b82f6' }}
+                                style={{ height: '100%', background: '#ffffff' }}
                             />
                         </div>
 
@@ -183,7 +183,7 @@ const UploadWidget = ({ projectId, onUploadComplete, initialFile }) => {
             ) : selectedFile ? (
                 <div style={{ padding: '1.5rem', textAlign: 'left' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', background: 'rgba(255,255,255,0.05)', padding: '1rem', borderRadius: '0.75rem' }}>
-                        <div style={{ background: 'rgba(59, 130, 246, 0.1)', padding: '0.75rem', borderRadius: '0.5rem', color: '#60a5fa' }}>
+                        <div style={{ background: 'rgba(255, 255, 255, 0.1)', padding: '0.75rem', borderRadius: '0.5rem', color: '#ffffff' }}>
                             <File size={24} />
                         </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
@@ -225,8 +225,8 @@ const UploadWidget = ({ projectId, onUploadComplete, initialFile }) => {
                         style={{ 
                             width: '100%', 
                             padding: '0.75rem', 
-                            background: '#3b82f6', 
-                            color: 'white', 
+                            background: '#ffffff', 
+                            color: 'black', 
                             border: 'none', 
                             borderRadius: '0.75rem', 
                             fontSize: '1rem', 
@@ -251,7 +251,7 @@ const UploadWidget = ({ projectId, onUploadComplete, initialFile }) => {
                     style={{ 
                         padding: '3rem 2rem', 
                         textAlign: 'center', 
-                        border: dragActive ? '2px dashed #3b82f6' : '2px dashed rgba(255,255,255,0.1)',
+                        border: dragActive ? '2px dashed #ffffff' : '2px dashed rgba(255,255,255,0.1)',
                         borderRadius: '1rem',
                         cursor: 'pointer',
                         position: 'relative',
@@ -265,11 +265,11 @@ const UploadWidget = ({ projectId, onUploadComplete, initialFile }) => {
                         onChange={handleChange} 
                     />
                     
-                    <UploadCloud size={48} style={{ color: dragActive ? '#60a5fa' : '#475569', margin: '0 auto 1rem', transition: 'color 0.2s' }} />
+                    <UploadCloud size={48} style={{ color: dragActive ? '#ffffff' : '#475569', margin: '0 auto 1rem', transition: 'color 0.2s' }} />
                     <p style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '0.5rem' }}>Click or Drag file to upload</p>
                     <p style={{ color: '#94a3b8', fontSize: '0.85rem' }}>Max 15MB per file</p>
                     
-                    {dragActive && <div style={{ position: 'absolute', inset: 0, background: 'rgba(59, 130, 246, 0.1)', pointerEvents: 'none' }}></div>}
+                    {dragActive && <div style={{ position: 'absolute', inset: 0, background: 'rgba(255, 255, 255, 0.05)', pointerEvents: 'none' }}></div>}
                 </form>
             )}
             

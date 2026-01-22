@@ -33,7 +33,7 @@ const Layout = () => {
     if (!user) return null;
 
     const navItemClass = ({ isActive }) => 
-        `flex items-center gap-3 p-3 rounded-lg mb-1 transition-colors ${isActive ? 'bg-blue-600/10 text-blue-500' : 'text-slate-400 hover:bg-slate-800'}`;
+        `flex items-center gap-3 p-3 rounded-lg mb-1 transition-colors ${isActive ? 'bg-zinc-800 text-white border border-zinc-700' : 'text-slate-400 hover:bg-slate-800'}`;
 
     const navItemStyle = { 
         display: 'flex', 
@@ -133,7 +133,7 @@ const Layout = () => {
                 {/* Footer User Profile */}
                 <div style={{ padding: '1rem', borderTop: '1px solid var(--border)', whiteSpace: 'nowrap' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-                        <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', flexShrink: 0 }}>
+                        <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#27272a', border: '1px solid #3f3f46', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', flexShrink: 0, color: 'white' }}>
                             {user.userId.charAt(0).toUpperCase()}
                         </div>
                         <div style={{ minWidth: 0, flex: 1, display: 'flex', flexDirection: 'column', gap: '2px' }}>
@@ -173,9 +173,9 @@ const Layout = () => {
                                     fontSize: '0.65rem', 
                                     padding: '2px 6px', 
                                     borderRadius: '4px', 
-                                    background: user.role === 'admin' ? 'rgba(139, 92, 246, 0.2)' : 'rgba(59, 130, 246, 0.2)', 
-                                    color: user.role === 'admin' ? '#c4b5fd' : '#93c5fd',
-                                    border: user.role === 'admin' ? '1px solid rgba(139, 92, 246, 0.3)' : '1px solid rgba(59, 130, 246, 0.3)',
+                                    background: user.role === 'admin' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.1)', 
+                                    color: user.role === 'admin' ? '#ffffff' : '#d4d4d8',
+                                    border: user.role === 'admin' ? '1px solid rgba(255, 255, 255, 0.2)' : '1px solid rgba(255, 255, 255, 0.1)',
                                     textTransform: 'uppercase',
                                     fontWeight: 'bold',
                                     letterSpacing: '0.5px'

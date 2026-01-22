@@ -68,7 +68,7 @@ const UserDashboard = () => {
     };
 
     const attStatus = getAttendanceIcon();
-    const storageColor = summary.storage.percent >= 90 ? '#ef4444' : summary.storage.percent >= 70 ? '#eab308' : '#3b82f6';
+    const storageColor = summary.storage.percent >= 90 ? '#ef4444' : summary.storage.percent >= 70 ? '#eab308' : '#ffffff';
     
     const handleApplyAttendance = async () => {
         try {

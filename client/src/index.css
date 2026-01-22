@@ -1,14 +1,14 @@
 :root {
-  --bg-dark: #0f172a;
-  --bg-card: #1e293b;
-  --primary: #3b82f6;
-  --primary-hover: #2563eb;
-  --text-main: #f8fafc;
-  --text-muted: #94a3b8;
+  --bg-dark: #000000;
+  --bg-card: #121212;
+  --primary: #ffffff;
+  --primary-hover: #e5e5e5;
+  --text-main: #ffffff;
+  --text-muted: #a3a3a3;
   --danger: #ef4444;
   --success: #22c55e;
-  --glass: rgba(30, 41, 59, 0.7);
-  --border: rgba(255, 255, 255, 0.1);
+  --glass: rgba(18, 18, 18, 0.7);
+  --border: #333333;
 }
 
 * {
@@ -49,7 +49,7 @@ body {
 
 .btn-primary {
   background: var(--primary);
-  color: white;
+  color: black;
 }
 
 .btn-primary:hover {
@@ -112,7 +112,8 @@ body {
 .shimmer {
   position: relative;
   overflow: hidden;
-  background: var(--bg-card); /* Base color */
+  background: #27272a; /* Zinc-800: Lighter than bg-card */
+  border-radius: 4px;
 }
 
 .shimmer::after {
@@ -125,7 +126,7 @@ body {
   background: linear-gradient(
     90deg,
     rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.05) 50%,
+    rgba(255, 255, 255, 0.1) 50%, /* Increased opacity */
     rgba(255, 255, 255, 0) 100%
   );
   animation: shimmer 1.5s infinite;

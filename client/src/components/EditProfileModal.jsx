@@ -53,7 +53,7 @@ const EditProfileModal = ({ isOpen, onClose }) => {
                     style={{ 
                         width: '90%', 
                         maxWidth: '400px', 
-                        background: '#1e293b', 
+                        background: '#18181b', 
                         border: '1px solid rgba(255, 255, 255, 0.1)', 
                         borderRadius: '1rem',
                         boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
@@ -68,7 +68,7 @@ const EditProfileModal = ({ isOpen, onClose }) => {
                         borderBottom: '1px solid rgba(255, 255, 255, 0.05)'
                     }}>
                         <h2 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.1rem', fontWeight: 'bold', color: 'white', margin: 0 }}>
-                            <User size={18} className="text-blue-400" style={{ color: '#60a5fa' }} /> 
+                            <User size={18} className="text-white" style={{ color: '#ffffff' }} /> 
                             Edit Profile
                         </h2>
                         <button 
@@ -117,13 +117,13 @@ const EditProfileModal = ({ isOpen, onClose }) => {
                                         width: '100%', 
                                         padding: '0.625rem 1rem', 
                                         borderRadius: '0.5rem',
-                                        background: '#0f172a',
+                                        background: '#09090b',
                                         border: '1px solid #334155',
                                         color: 'white',
                                         fontSize: '0.95rem',
                                         outline: 'none'
                                     }}
-                                    onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
+                                    onFocus={(e) => e.target.style.borderColor = '#ffffff'}
                                     onBlur={(e) => e.target.style.borderColor = '#334155'}
                                     required
                                 />
@@ -157,9 +157,9 @@ const EditProfileModal = ({ isOpen, onClose }) => {
                                         fontSize: '0.85rem', 
                                         cursor: 'pointer', 
                                         borderRadius: '0.5rem',
-                                        background: '#3b82f6', 
+                                        background: '#ffffff', 
                                         border: 'none',
-                                        color: 'white',
+                                        color: 'black',
                                         fontWeight: '500'
                                     }}
                                 >

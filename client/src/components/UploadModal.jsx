@@ -29,7 +29,7 @@ const UploadModal = ({ isOpen, onClose, projectId, onUploadComplete, initialFile
                     animate={{ scale: 1, opacity: 1 }}
                     exit={{ scale: 0.9, opacity: 0 }}
                     style={{
-                        background: '#0f172a',
+                        background: '#18181b',
                         border: '1px solid rgba(255, 255, 255, 0.1)',
                         borderRadius: '1rem',
                         padding: '1.5rem',

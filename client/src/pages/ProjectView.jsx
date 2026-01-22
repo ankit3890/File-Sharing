@@ -155,7 +155,7 @@ const ProjectView = () => {
         const ext = filename.split('.').pop().toLowerCase();
         if (['jpg', 'jpeg', 'png', 'gif', 'svg'].includes(ext)) return { color: '#f59e0b', icon: File }; // Image (Yellowish) - Using File generic for now, could actally differentiate
         if (['pdf'].includes(ext)) return { color: '#ef4444', icon: File }; // PDF (Red) - Use File generic but colored
-        if (['doc', 'docx'].includes(ext)) return { color: '#3b82f6', icon: File }; // Doc (Blue)
+        if (['doc', 'docx'].includes(ext)) return { color: '#ffffff', icon: File }; // Doc (White)
         if (['xls', 'xlsx', 'csv'].includes(ext)) return { color: '#10b981', icon: File }; // Sheet (Green)
         if (['mp4', 'mov', 'avi'].includes(ext)) return { color: '#8b5cf6', icon: File }; // Video (Purple)
         if (['zip', 'rar', '7z'].includes(ext)) return { color: '#64748b', icon: File }; // Archive (Gray)
@@ -184,9 +184,9 @@ const ProjectView = () => {
         >
             {/* Drag Overlay */}
             {dragActive && (
-                <div style={{ position: 'absolute', inset: 0, background: 'rgba(59, 130, 246, 0.1)', border: '2px dashed #3b82f6', zIndex: 100, pointerEvents: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ position: 'absolute', inset: 0, background: 'rgba(255, 255, 255, 0.05)', border: '2px dashed #52525b', zIndex: 100, pointerEvents: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <div style={{ background: '#1e293b', padding: '1rem 2rem', borderRadius: '1rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                        <UploadCloud size={32} color="#3b82f6" />
+                        <UploadCloud size={32} color="#ffffff" />
                         <span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Drop to Upload</span>
                     </div>
                 </div>
@@ -226,37 +226,47 @@ const ProjectView = () => {
             <div style={{ display: isMobile ? 'flex' : 'grid', flexDirection: isMobile ? 'column' : undefined, gridTemplateColumns: isMobile ? undefined : '3fr 1fr', gap: '1.5rem', flex: 1, overflow: isMobile ? 'visible' : 'hidden' }}>
                 
                 {/* File List Container */}
-                <div ref={parentRef} className="glass" style={{ borderRadius: '1rem', overflowY: isMobile ? 'visible' : 'auto', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+                <div ref={parentRef} className="glass" style={{ borderRadius: '1rem', overflow: 'hidden', display: 'flex', flexDirection: 'column', position: 'relative', border: '1px solid rgba(255,255,255,0.05)', background: 'rgba(255, 255, 255, 0.01)' }}>
                     
-                    {/* Sticky Search & Filter */}
-                    <div style={{ padding: '1rem', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', gap: '1rem', alignItems: 'center', position: 'sticky', top: 0, background: '#1e293b', zIndex: 20 }}>
+                    {/* Header: Search & Filter */}
+                    <div style={{ padding: '1rem', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', gap: '1rem', alignItems: 'center', background: 'rgba(20, 20, 20, 0.4)' }}>
                          <div style={{ position: 'relative', flex: 1 }}>
                             <Search size={18} style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
-                            <input type="text" placeholder="Search files..." value={fileSearch} onChange={(e) => setFileSearch(e.target.value)} className="search-input" />
+                            <input 
+                                type="text" 
+                                placeholder="Search files..." 
+                                value={fileSearch} 
+                                onChange={(e) => setFileSearch(e.target.value)} 
+                                className="search-input" 
+                                style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', height: '40px' }}
+                            />
                         </div>
                         {selectedMember && (
-                            <div className="filter-badge">
+                            <div className="filter-badge" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#e2e8f0' }}>
                                 <span>{selectedMember.userId}</span>
-                                <button onClick={() => setSelectedMember(null)}><X size={14} /></button>
+                                <button onClick={() => setSelectedMember(null)} style={{ color: '#94a3b8' }}><X size={14} /></button>
                             </div>
                         )}
                     </div>
 
-                    {/* Table Header */}
-                    <div className="table-header" style={{ position: 'sticky', top: '4.5rem', background: '#1e293b', zIndex: 19 }}>
-                        <span>Type</span>
-                        <span>Name</span>
-                        {!isMobile && <span>Size / Date</span>}
-                        {!isMobile && <span>Uploader</span>}
-                        <span style={{ textAlign: 'right' }}>Actions</span>
-                    </div>
+                    {/* Table Header Row */}
+                    {!isMobile && (
+                        <div className="table-header" style={{ display: 'grid', gridTemplateColumns: 'minmax(40px, auto) 2fr 1fr 1fr 1fr', gap: '1rem', padding: '1rem 1.5rem', background: 'rgba(255, 255, 255, 0.03)', borderBottom: '1px solid rgba(255,255,255,0.05)', color: '#64748b', fontSize: '0.75rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+                            <span>Type</span>
+                            <span>Name</span>
+                            <span>Size / Date</span>
+                            <span>Uploader</span>
+                            <span style={{ textAlign: 'right' }}>Actions</span>
+                        </div>
+                    )}
                     
-                    {/* Virtual List */}
-                    <div style={{ flex: 1, position: 'relative' }}>
+                    {/* File List Content */}
+                    <div style={{ flex: 1, overflowY: isMobile ? 'visible' : 'auto', position: 'relative' }}>
                         {visibleFiles.length === 0 ? (
-                            <div className="empty-state">
-                                <File size={32} strokeWidth={1} />
-                                <p>No files found.</p>
+                            <div className="empty-state" style={{ padding: '4rem', color: '#475569' }}>
+                                <File size={48} strokeWidth={1} style={{ opacity: 0.2, marginBottom: '1rem' }} />
+                                <p style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#94a3b8' }}>No files found</p>
+                                <p style={{ fontSize: '0.9rem' }}>Try adjusting your search or filters</p>
                             </div>
                         ) : (
                             <div style={{ height: `${rowVirtualizer.getTotalSize()}px`, width: '100%', position: 'relative' }}>
@@ -267,36 +277,51 @@ const ProjectView = () => {
 
                                     return (
                                         <div key={virtualRow.key} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: `${virtualRow.size}px`, transform: `translateY(${virtualRow.start}px)` }}>
-                                            <motion.div className="file-row" style={{ opacity: file.deletedByAdmin ? 0.6 : 1, background: file.deletedByAdmin ? 'rgba(239, 68, 68, 0.05)' : 'transparent' }}>
+                                            <motion.div 
+                                                className="file-row" 
+                                                style={{ 
+                                                    display: 'grid',
+                                                    gridTemplateColumns: isMobile ? 'auto 1fr auto' : 'minmax(40px, auto) 2fr 1fr 1fr 1fr',
+                                                    gap: '1rem',
+                                                    padding: '1rem 1.5rem',
+                                                    borderBottom: '1px solid rgba(255,255,255,0.02)',
+                                                    alignItems: 'center',
+                                                    height: '100%',
+                                                    opacity: file.deletedByAdmin ? 0.6 : 1, 
+                                                    background: file.deletedByAdmin ? 'rgba(239, 68, 68, 0.05)' : 'transparent',
+                                                    transition: 'background 0.2s'
+                                                }}
+                                                whileHover={{ backgroundColor: 'rgba(255,255,255,0.02)' }}
+                                            >
                                                 <div style={{ display: 'flex', justifyContent: 'center' }}>
-                                                    <IconComponent size={24} style={{ color: color }} />
+                                                    <IconComponent size={20} style={{ color: color }} />
                                                 </div>
                                                 <div style={{ minWidth: 0 }}>
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                                        <p className="file-name" onDoubleClick={() => { setFileToEdit(file); setIsEditModalOpen(true); }}>{file.originalName}</p>
+                                                        <p className="file-name" onDoubleClick={() => { setFileToEdit(file); setIsEditModalOpen(true); }} style={{ fontWeight: '600', color: '#f1f5f9', fontSize: '0.9rem' }}>{file.originalName}</p>
                                                         {isNew && <span className="badge-new">NEW</span>}
                                                         {file.deletedByAdmin && <span className="badge-deleted">DELETED</span>}
                                                     </div>
-                                                    <p className="file-desc">{file.description || 'Uploaded via Web'}</p>
+                                                    <p className="file-desc" style={{ fontSize: '0.8rem', color: '#64748b' }}>{file.description || 'Uploaded via Web'}</p>
                                                 </div>
                                                 {!isMobile && (
                                                     <div className="file-meta">
-                                                        <p>{(file.size / 1048576).toFixed(2)} MB</p>
-                                                        <p style={{ color: '#64748b' }}>{new Date(file.uploadedAt).toLocaleDateString()}</p>
+                                                        <p style={{ color: '#cbd5e1', fontSize: '0.85rem', fontWeight: '500' }}>{(file.size / 1048576).toFixed(2)} MB</p>
+                                                        <p style={{ color: '#64748b', fontSize: '0.8rem' }}>{new Date(file.uploadedAt).toLocaleDateString()}</p>
                                                     </div>
                                                 )}
-                                                {!isMobile && <div className="uploader-name">{file.uploader?.userId || 'Unknown'}</div>}
+                                                {!isMobile && <div className="uploader-name" style={{ color: '#cbd5e1', fontSize: '0.9rem' }}>{file.uploader?.userId || 'Unknown'}</div>}
                                                 <div className="actions-cell">
                                                     {!file.deletedByAdmin && (
                                                         <>
-                                                            <button onClick={() => { setSelectedFile(file); markAsViewed(file._id); }} className="btn-icon"><Eye size={18} /></button>
-                                                            <button onClick={() => handleDownload(file._id)} className="btn-icon"><Download size={18} /></button>
+                                                            <button onClick={() => { setSelectedFile(file); markAsViewed(file._id); }} className="btn-icon" title="View"><Eye size={18} /></button>
+                                                            <button onClick={() => handleDownload(file._id)} className="btn-icon" title="Download"><Download size={18} /></button>
                                                         </>
                                                     )}
                                                     {(user?.role === 'admin' || user?._id === file.uploader?._id) && !file.deletedByAdmin && (
                                                         <>
-                                                            <button onClick={() => { setFileToEdit(file); setIsEditModalOpen(true); }} className="btn-icon"><Edit2 size={18} /></button>
-                                                            <button onClick={() => { setFileToDelete(file); setIsDeleteModalOpen(true); }} className="btn-icon-danger"><Trash2 size={18} /></button>
+                                                            <button onClick={() => { setFileToEdit(file); setIsEditModalOpen(true); }} className="btn-icon" title="Edit"><Edit2 size={18} /></button>
+                                                            <button onClick={() => { setFileToDelete(file); setIsDeleteModalOpen(true); }} className="btn-icon-danger" title="Delete"><Trash2 size={18} /></button>
                                                         </>
                                                     )}
                                                 </div>
@@ -321,16 +346,16 @@ const ProjectView = () => {
             <AlertModal isOpen={alertState.isOpen} onClose={() => setAlertState(p => ({ ...p, isOpen: false }))} {...alertState} />
             
             <style>{`
-                .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+                .glass { background: rgba(20, 20, 20, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
                 .input-field { width: 100%; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 0.5rem; border-radius: 0.5rem; }
                 .search-input { width: 100%; padding: 0.6rem 0.6rem 0.6rem 2.5rem; border-radius: 0.5rem; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); color: white; outline: none; }
                 .search-input:focus { border-color: rgba(59, 130, 246, 0.5); }
-                .table-header { padding: 0.75rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); display: grid; grid-template-columns: ${isMobile ? 'auto 1fr auto' : 'minmax(40px, auto) 2fr 1fr 1fr 1fr'}; gap: 1rem; color: #94a3b8; font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
-                .file-row { display: grid; grid-template-columns: ${isMobile ? 'auto 1fr auto' : 'minmax(40px, auto) 2fr 1fr 1fr 1fr'}; gap: 1rem; padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.03); align-items: center; height: 100%; transition: background 0.2s; }
-                .file-row:hover { background: rgba(255,255,255,0.03) !important; }
-                .btn-primary { display: flex; alignItems: center; gap: 0.5rem; padding: 0.75rem 1.5rem; border-radius: 0.75rem; background: #3b82f6; border: none; color: white; cursor: pointer; font-weight: 500; transition: background 0.2s; }
-                .btn-primary:hover { background: #2563eb; }
-                .btn-primary-sm { padding: 0.25rem 0.75rem; font-size: 0.8rem; border-radius: 0.25rem; background: #3b82f6; border: none; color: white; cursor: pointer; }
+                .table-header { padding: 0.75rem 1rem; background: rgba(255, 255, 255, 0.03); border-bottom: 1px solid rgba(255,255,255,0.05); display: grid; grid-template-columns: ${isMobile ? 'auto 1fr auto' : 'minmax(40px, auto) 2fr 1fr 1fr 1fr'}; gap: 1rem; color: #64748b; font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; }
+                .file-row { display: grid; grid-template-columns: ${isMobile ? 'auto 1fr auto' : 'minmax(40px, auto) 2fr 1fr 1fr 1fr'}; gap: 1rem; padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.02); align-items: center; height: 100%; transition: background 0.2s; }
+                .file-row:hover { background: rgba(255,255,255,0.02) !important; }
+                .btn-primary { display: flex; alignItems: center; gap: 0.5rem; padding: 0.75rem 1.5rem; border-radius: 0.75rem; background: #ffffff; border: none; color: black; cursor: pointer; font-weight: 600; transition: background 0.2s; }
+                .btn-primary:hover { background: #e4e4e7; }
+                .btn-primary-sm { padding: 0.25rem 0.75rem; font-size: 0.8rem; border-radius: 0.25rem; background: #ffffff; border: none; color: black; font-weight: 600; cursor: pointer; }
                 .btn-secondary-sm { padding: 0.25rem 0.75rem; font-size: 0.8rem; background: transparent; border: 1px solid #64748b; color: #94a3b8; border-radius: 0.25rem; cursor: pointer; }
                 .btn-icon, .btn-icon-danger { background: none; border: none; color: #94a3b8; cursor: pointer; padding: 6px; border-radius: 6px; transition: all 0.2s; }
                 .btn-icon:hover { color: white; background: rgba(255,255,255,0.1); }
@@ -339,7 +364,7 @@ const ProjectView = () => {
                 .file-desc { font-size: 0.8rem; color: #94a3b8; margin-top: 0.1rem; }
                 .file-meta p { font-size: 0.85rem; color: #cbd5e1; }
                 .uploader-name { font-size: 0.9rem; color: #cbd5e1; }
-                .badge-new { font-size: 0.65rem; background: #3b82f6; color: white; padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: bold; letter-spacing: 0.05em; }
+                .badge-new { font-size: 0.65rem; background: #ffffff; color: black; padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: bold; letter-spacing: 0.05em; }
                 .badge-deleted { font-size: 0.65rem; background: #ef4444; color: white; padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: bold; }
                 .actions-cell { display: flex; gap: 0.25rem; justify-content: flex-end; }
                 .filter-badge { display: flex; align-items: center; gap: 0.5rem; background: rgba(59, 130, 246, 0.2); padding: 0.4rem 0.8rem; border-radius: 2rem; border: 1px solid rgba(59, 130, 246, 0.4); font-size: 0.85rem; color: #93c5fd; }

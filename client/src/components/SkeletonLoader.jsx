@@ -2,7 +2,7 @@ import React from 'react';
 
 const SkeletonLoader = ({ mode = 'full' }) => {
     return (
-        <div style={{ display: 'flex', height: '100vh', width: '100vw', background: '#0f172a', overflow: 'hidden' }}>
+        <div style={{ display: 'flex', height: '100vh', width: '100vw', background: 'var(--bg-dark)', overflow: 'hidden' }}>
             {/* Sidebar Skeleton */}
             <div style={{ width: '250px', borderRight: '1px solid rgba(255,255,255,0.1)', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
                 {/* Logo Area */}

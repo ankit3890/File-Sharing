@@ -42,7 +42,7 @@ const Login = () => {
     };
 
     return (
-        <div className="center-screen" style={{ background: 'radial-gradient(circle at top right, #1e1b4b, #0f172a)' }}>
+        <div className="center-screen" style={{ background: 'radial-gradient(circle at top right, #27272a, #000000)' }}>
             <motion.div 
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
@@ -89,7 +89,7 @@ const Login = () => {
                             id="remember" 
                             checked={rememberMe} 
                             onChange={(e) => setRememberMe(e.target.checked)}
-                            style={{ width: '1rem', height: '1rem', cursor: 'pointer', accentColor: '#3b82f6' }}
+                            style={{ width: '1rem', height: '1rem', cursor: 'pointer', accentColor: '#ffffff' }}
                         />
                         <label htmlFor="remember" style={{ color: '#cbd5e1', fontSize: '0.9rem', cursor: 'pointer' }}>
                             Remember Me
