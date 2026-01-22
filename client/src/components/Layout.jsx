@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import AboutModal from './AboutModal';
-import { LayoutDashboard, Users, FileText, Settings, LogOut, Menu, Info, CalendarCheck } from 'lucide-react';
+import EditProfileModal from './EditProfileModal';
+import { LayoutDashboard, Users, FileText, Settings, LogOut, Menu, Info, CalendarCheck, Edit2 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import logo from '../assets/logo.png';
 
 const Layout = () => {
     const { user, logout } = useAuth();
@@ -11,6 +13,7 @@ const Layout = () => {
     const [collapsed, setCollapsed] = useState(window.innerWidth < 768);
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
     const [showAbout, setShowAbout] = useState(false);
+    const [showEditProfile, setShowEditProfile] = useState(false);
 
     React.useEffect(() => {
         const handleResize = () => {
@@ -51,6 +54,7 @@ const Layout = () => {
     return (
         <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg-dark)' }}>
             <AboutModal isOpen={showAbout} onClose={() => setShowAbout(false)} />
+            <EditProfileModal isOpen={showEditProfile} onClose={() => setShowEditProfile(false)} />
 
             {/* Sidebar Overlay for Mobile */}
             {isMobile && !collapsed && (
@@ -132,9 +136,53 @@ const Layout = () => {
                         <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', flexShrink: 0 }}>
                             {user.userId.charAt(0).toUpperCase()}
                         </div>
-                        <div style={{ minWidth: 0 }}>
-                            <p style={{ fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user.userId}</p>
-                            <p style={{ fontSize: '0.8rem', color: '#94a3b8' }}>{user.role}</p>
+                        <div style={{ minWidth: 0, flex: 1, display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                            {/* Row 1: Name + Edit Button */}
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                                <p style={{ fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '0.95rem' }}>
+                                    {user.name || 'Set Name'}
+                                </p>
+                                <button 
+                                    onClick={() => setShowEditProfile(true)}
+                                    style={{ 
+                                        background: 'transparent', 
+                                        border: 'none', 
+                                        padding: '4px', 
+                                        cursor: 'pointer',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        borderRadius: '4px',
+                                        color: '#94a3b8' 
+                                    }}
+                                    className="hover:bg-slate-700/50 hover:text-white transition-colors"
+                                    title="Edit Profile"
+                                >
+                                    <Edit2 size={12} />
+                                </button>
+                            </div>
+
+                            {/* Row 2: User ID */}
+                            <p style={{ fontSize: '0.75rem', color: '#94a3b8', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                {user.userId}
+                            </p>
+
+                            {/* Row 3: Role Badge */}
+                            <div style={{ marginTop: '2px' }}>
+                                <span style={{ 
+                                    fontSize: '0.65rem', 
+                                    padding: '2px 6px', 
+                                    borderRadius: '4px', 
+                                    background: user.role === 'admin' ? 'rgba(139, 92, 246, 0.2)' : 'rgba(59, 130, 246, 0.2)', 
+                                    color: user.role === 'admin' ? '#c4b5fd' : '#93c5fd',
+                                    border: user.role === 'admin' ? '1px solid rgba(139, 92, 246, 0.3)' : '1px solid rgba(59, 130, 246, 0.3)',
+                                    textTransform: 'uppercase',
+                                    fontWeight: 'bold',
+                                    letterSpacing: '0.5px'
+                                }}>
+                                    {user.role}
+                                </span>
+                            </div>
                         </div>
                     </div>
                     <button onClick={handleLogout} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem', background: 'transparent', border: '1px solid var(--border)', borderRadius: '0.5rem', color: '#94a3b8', cursor: 'pointer', justifyContent: 'center' }}>
@@ -158,7 +206,10 @@ const Layout = () => {
                     >
                         <Menu size={24} />
                     </button>
-                    <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>P.C Bindal and Co.</h1>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                        <img src={logo} alt="Logo" style={{ height: '40px', objectFit: 'contain' }} />
+                        <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>P.C Bindal and Co.</h1>
+                    </div>
                 </header>
                 <div style={{ padding: '2rem', flex: 1 }}>
                     <Outlet />

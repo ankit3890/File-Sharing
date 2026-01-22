@@ -1,8 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const { registerUser, getUsers, deleteUser } = require('../controllers/userController');
+const { registerUser, getUsers, deleteUser, updateProfile } = require('../controllers/userController');
 const { protect, admin } = require('../middleware/auth');
 const logger = require('../middleware/logger');
+
+router.put('/profile', protect, updateProfile);
 
 router.route('/')
     .post(protect, admin, logger, registerUser)

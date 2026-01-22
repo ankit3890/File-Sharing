@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 
 const ResetPassword = () => {
     const { user, updateUserLocal, logout } = useAuth();
+    const [name, setName] = useState('');
     const [password, setPassword] = useState('');
     const [confirm, setConfirm] = useState('');
     const [error, setError] = useState('');
@@ -31,7 +32,8 @@ const ResetPassword = () => {
         try {
             const res = await api.put('/auth/change-password', {
                 currentPassword: '123', // Default for first login
-                newPassword: password
+                newPassword: password,
+                name: name
             });
             
             updateUserLocal({ 
@@ -71,6 +73,21 @@ const ResetPassword = () => {
 
                 <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                     <div style={{ position: 'relative' }}>
+                        <div style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: '#64748b' }}>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                        </div>
+                        <input
+                            type="text"
+                            placeholder="Your Name (e.g. Ankit)"
+                            className="input-field"
+                            style={{ paddingLeft: '3rem' }}
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            required
+                            autoFocus
+                        />
+                    </div>
+                    <div style={{ position: 'relative' }}>
                         <Lock size={18} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: '#64748b' }} />
                         <input
                             type="password"
@@ -80,7 +97,6 @@ const ResetPassword = () => {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
-                            autoFocus
                         />
                     </div>
                     <div style={{ position: 'relative' }}>

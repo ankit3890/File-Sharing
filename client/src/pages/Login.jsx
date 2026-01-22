@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { User, Lock, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
+import logo from '../assets/logo.png';
 
 const Login = () => {
     const [userId, setUserId] = useState(localStorage.getItem('savedUserId') || '');
@@ -49,6 +50,9 @@ const Login = () => {
                 className="glass"
                 style={{ width: '100%', maxWidth: '400px', padding: '2.5rem', borderRadius: '1.5rem' }}
             >
+                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
+                    <img src={logo} alt="Logo" style={{ height: '60px', objectFit: 'contain' }} />
+                </div>
                 <h1 style={{ fontSize: '2rem', marginBottom: '0.5rem', textAlign: 'center' }}>Welcome Back</h1>
                 <p style={{ color: '#94a3b8', textAlign: 'center', marginBottom: '2rem' }}>P.C Bindal and Co.</p>
 

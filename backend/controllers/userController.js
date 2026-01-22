@@ -78,4 +78,30 @@ const deleteUser = async (req, res, next) => {
     }
 };
 
-module.exports = { registerUser, getUsers, deleteUser };
+// @desc    Update user profile (Name)
+// @route   PUT /api/users/profile
+// @access  Private
+const updateProfile = async (req, res, next) => {
+    try {
+        const user = await User.findById(req.user._id);
+
+        if (user) {
+            user.name = req.body.name || user.name;
+            const updatedUser = await user.save();
+
+            res.json({
+                _id: updatedUser._id,
+                userId: updatedUser.userId,
+                name: updatedUser.name,
+                role: updatedUser.role
+            });
+        } else {
+            res.status(404).json({ message: 'User not found' });
+        }
+    } catch (error) {
+        next(error);
+    }
+};
+
+// Start export block replacement
+module.exports = { registerUser, getUsers, deleteUser, updateProfile };

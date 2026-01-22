@@ -96,7 +96,9 @@ const UserDashboard = () => {
         <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
             {/* Header */}
             <div>
-                <h2 className="welcome-title" style={{ fontSize: '2rem', fontWeight: 'bold' }}>Welcome back, {user.userId.split('@')[0]} 👋</h2>
+                <h2 className="welcome-title" style={{ fontSize: '2rem', fontWeight: 'bold' }}>
+                    Welcome back, {user.name || user.userId.split('@')[0]} 👋
+                </h2>
                 <p style={{ color: '#94a3b8' }}>Here’s what’s happening today.</p>
             </div>
 

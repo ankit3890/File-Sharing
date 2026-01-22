@@ -29,6 +29,7 @@ const loginUser = async (req, res, next) => {
             res.json({
                 _id: user._id,
                 userId: user.userId,
+                name: user.name, // Return name
                 role: user.role,
                 storageUsed: user.storageUsed,
                 mustChangePassword: user.mustChangePassword,
@@ -48,12 +49,18 @@ const loginUser = async (req, res, next) => {
 // @access  Private
 const changePassword = async (req, res, next) => {
     try {
-        const { currentPassword, newPassword } = req.body;
+        const { currentPassword, newPassword, name } = req.body;
         const user = await User.findById(req.user._id);
 
         if (user && (await user.matchPassword(currentPassword))) {
             user.password = newPassword;
             user.mustChangePassword = false; // Reset the flag
+            
+            // Allow setting name during first password change
+            if (name) {
+                user.name = name;
+            }
+
             await user.save();
 
              // Log password change
@@ -68,6 +75,7 @@ const changePassword = async (req, res, next) => {
             res.json({
                 _id: user._id,
                 userId: user.userId,
+                name: user.name,
                 role: user.role,
                 mustChangePassword: user.mustChangePassword,
                 token: generateToken(user._id)
@@ -89,6 +97,7 @@ const getMe = async (req, res, next) => {
         res.json({
             _id: user._id,
             userId: user.userId,
+            name: user.name,
             role: user.role,
             storageUsed: user.storageUsed,
             mustChangePassword: user.mustChangePassword
