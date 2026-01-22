@@ -56,7 +56,7 @@ const ProjectView = () => {
     }, [files, fileSearch, selectedMember, user?.role]);
 
     const rowVirtualizer = useVirtualizer({
-        count: visibleFiles.length,
+        count: parentRef.current ? visibleFiles.length : 0,
         getScrollElement: () => parentRef.current,
         estimateSize: () => 80,
         overscan: 5,
@@ -163,8 +163,17 @@ const ProjectView = () => {
     };
 
     // --- Early Returns ---
-    if (loading) return <div className="p-8 text-center text-white">Loading Project...</div>;
-    if (!project) return <div className="p-8 text-center text-white">Project not found</div>;
+    if (!project && !loading) return <div className="p-8 text-center text-white">Project not found</div>;
+
+    const HeaderSkeleton = () => (
+        <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', alignItems: isMobile ? 'flex-start' : 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+             <div>
+                <div className="skeleton-line" style={{ width: '300px', height: '40px', marginBottom: '1rem' }} />
+                <div className="skeleton-line" style={{ width: '200px', height: '20px' }} />
+             </div>
+             <div className="skeleton-line" style={{ width: '140px', height: '48px', borderRadius: '0.75rem' }} />
+        </div>
+    );
 
     return (
         <div 
@@ -193,34 +202,36 @@ const ProjectView = () => {
             )}
 
             {/* Header Section */}
-            <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', alignItems: isMobile ? 'flex-start' : 'center', gap: '1rem', marginBottom: '1.5rem' }}>
-                <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                        <h1 style={{ fontSize: '2rem', fontWeight: 'bold' }}>{project.name}</h1>
-                        {user?.role === 'admin' && !isEditingProject && (
-                            <button onClick={() => { setEditName(project.name); setEditDesc(project.description); setIsEditingProject(true); }} className="btn-icon"><Edit2 size={18} /></button>
+            {loading && !project ? <HeaderSkeleton /> : (
+                <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', alignItems: isMobile ? 'flex-start' : 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+                    <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                            <h1 style={{ fontSize: '2rem', fontWeight: 'bold' }}>{project.name}</h1>
+                            {user?.role === 'admin' && !isEditingProject && (
+                                <button onClick={() => { setEditName(project.name); setEditDesc(project.description); setIsEditingProject(true); }} className="btn-icon"><Edit2 size={18} /></button>
+                            )}
+                        </div>
+                        {isEditingProject ? (
+                            <div style={{ marginTop: '0.5rem', width: isMobile ? '100%' : '400px' }}>
+                                <input type="text" value={editName} onChange={(e) => setEditName(e.target.value)} className="input-field" style={{ marginBottom: '0.5rem' }} />
+                                <textarea value={editDesc} onChange={(e) => setEditDesc(e.target.value)} className="input-field" rows={3} />
+                                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+                                    <button onClick={saveProjectDesc} className="btn-primary-sm">Save</button>
+                                    <button onClick={() => setIsEditingProject(false)} className="btn-secondary-sm">Cancel</button>
+                                </div>
+                            </div>
+                        ) : (
+                            <p style={{ color: '#94a3b8' }}>{project.description || 'No description'}</p>
                         )}
                     </div>
-                    {isEditingProject ? (
-                        <div style={{ marginTop: '0.5rem', width: isMobile ? '100%' : '400px' }}>
-                            <input type="text" value={editName} onChange={(e) => setEditName(e.target.value)} className="input-field" style={{ marginBottom: '0.5rem' }} />
-                            <textarea value={editDesc} onChange={(e) => setEditDesc(e.target.value)} className="input-field" rows={3} />
-                            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
-                                <button onClick={saveProjectDesc} className="btn-primary-sm">Save</button>
-                                <button onClick={() => setIsEditingProject(false)} className="btn-secondary-sm">Cancel</button>
-                            </div>
-                        </div>
-                    ) : (
-                        <p style={{ color: '#94a3b8' }}>{project.description || 'No description'}</p>
-                    )}
+                    <button 
+                        onClick={() => user.storageUsed >= user.storageLimit ? setAlertState({ isOpen: true, title: 'Limit Reached', message: 'Storage full.', type: 'error' }) : setIsUploadOpen(true)}  
+                        className="btn-primary"
+                    >
+                        <UploadCloud size={20} /> Upload File
+                    </button>
                 </div>
-                <button 
-                    onClick={() => user.storageUsed >= user.storageLimit ? setAlertState({ isOpen: true, title: 'Limit Reached', message: 'Storage full.', type: 'error' }) : setIsUploadOpen(true)}  
-                    className="btn-primary"
-                >
-                    <UploadCloud size={20} /> Upload File
-                </button>
-            </div>
+            )}
 
             {/* Main Content Grid */}
             <div style={{ display: isMobile ? 'flex' : 'grid', flexDirection: isMobile ? 'column' : undefined, gridTemplateColumns: isMobile ? undefined : '3fr 1fr', gap: '1.5rem', flex: 1, overflow: isMobile ? 'visible' : 'hidden' }}>
@@ -262,7 +273,20 @@ const ProjectView = () => {
                     
                     {/* File List Content */}
                     <div style={{ flex: 1, overflowY: isMobile ? 'visible' : 'auto', position: 'relative' }}>
-                        {visibleFiles.length === 0 ? (
+                        {loading && files.length === 0 ? (
+                            <div style={{ padding: '1rem' }}>
+                                {Array.from({ length: 8 }).map((_, i) => (
+                                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem', borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
+                                        <div className="skeleton-line" style={{ width: '40px', height: '40px', borderRadius: '0.25rem' }} />
+                                        <div style={{ flex: 1 }}>
+                                            <div className="skeleton-line" style={{ width: '60%', height: '14px', marginBottom: '0.5rem' }} />
+                                            <div className="skeleton-line" style={{ width: '40%', height: '12px' }} />
+                                        </div>
+                                        <div className="skeleton-line" style={{ width: '80px', height: '14px' }} />
+                                    </div>
+                                ))}
+                            </div>
+                        ) : visibleFiles.length === 0 ? (
                             <div className="empty-state" style={{ padding: '4rem', color: '#475569' }}>
                                 <File size={48} strokeWidth={1} style={{ opacity: 0.2, marginBottom: '1rem' }} />
                                 <p style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#94a3b8' }}>No files found</p>
@@ -335,7 +359,7 @@ const ProjectView = () => {
                 </div>
 
                 {/* Sidebar */}
-                <MembersPanel members={project.members} onMemberSelect={m => setSelectedMember(selectedMember?._id === m._id ? null : m)} selectedMemberId={selectedMember?._id} />
+                {project && <MembersPanel members={project.members} onMemberSelect={m => setSelectedMember(selectedMember?._id === m._id ? null : m)} selectedMemberId={selectedMember?._id} />}
             </div>
 
             {/* Modals */}

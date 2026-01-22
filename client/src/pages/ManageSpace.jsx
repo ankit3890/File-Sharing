@@ -98,42 +98,56 @@ const ManageSpace = () => {
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
             <h2 style={{ fontSize: '1.5rem', marginBottom: '2rem' }}>Manage Storage</h2>
             
-            <div className="glass" style={{ padding: '2rem', borderRadius: '1rem', maxWidth: '600px', marginBottom: '2rem', position: 'relative' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
-                    <div style={{ padding: '1rem', background: `rgba(${percentage >= 90 ? '239, 68, 68' : percentage >= 70 ? '234, 179, 8' : '255, 255, 255'}, 0.1)`, borderRadius: '50%' }}>
-                        <HardDrive size={32} style={{ color: getStorageColor() }} />
+            {loading ? (
+                 <div className="glass" style={{ padding: '2rem', borderRadius: '1rem', maxWidth: '600px', marginBottom: '2rem', position: 'relative' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+                        <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)' }} />
+                        <div style={{ flex: 1 }}>
+                            <div className="skeleton-line" style={{ width: '40%', marginBottom: '0.5rem' }} />
+                            <div className="skeleton-line" style={{ width: '60%' }} />
+                        </div>
                     </div>
-                    <div>
-                        <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Storage Usage</h3>
-                        <p style={{ color: '#94a3b8' }}>{(used / 1024 / 1024).toFixed(2)} MB of 100 MB used</p>
-                    </div>
+                    <div className="skeleton-line" style={{ width: '100%', height: '1rem', borderRadius: '1rem', marginBottom: '1rem' }} />
+                    <div className="skeleton-line" style={{ width: '80%' }} />
                 </div>
+            ) : (
+                <div className="glass" style={{ padding: '2rem', borderRadius: '1rem', maxWidth: '600px', marginBottom: '2rem', position: 'relative' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+                        <div style={{ padding: '0.75rem', background: `rgba(${percentage >= 90 ? '239, 68, 68' : percentage >= 70 ? '234, 179, 8' : '255, 255, 255'}, 0.1)`, borderRadius: '50%' }}>
+                            <HardDrive size={32} style={{ color: getStorageColor() }} />
+                        </div>
+                        <div>
+                            <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Storage Usage</h3>
+                            <p style={{ color: '#94a3b8' }}>{(used / 1024 / 1024).toFixed(2)} MB of 100 MB used</p>
+                        </div>
+                    </div>
 
-                <div 
-                    style={{ height: '1rem', background: '#334155', borderRadius: '1rem', overflow: 'hidden', marginBottom: '0.75rem' }}
-                    title={`Storage limit: 100 MB per user`}
-                >
-                    <div style={{ 
-                        width: `${percentage}%`, 
-                        height: '100%', 
-                        background: getStorageColor(), 
-                        transition: 'width 1s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.5s ease' 
-                    }}></div>
-                </div>
-                
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem' }}>
-                    <div>
-                        <p style={{ fontSize: '0.9rem', color: '#cbd5e1', marginBottom: '0.25rem' }}>{getStatusMessage()}</p>
-                        <p style={{ fontSize: '0.8rem', color: '#64748b' }}>{(remaining / 1024 / 1024).toFixed(2)} MB remaining</p>
-                    </div>
-                    <button 
-                        onClick={handleViewLargeFiles}
-                        style={{ border: 'none', color: '#cbd5e1', fontSize: '0.85rem', cursor: 'pointer', padding: '0.25rem 0.5rem', borderRadius: '4px', background: 'rgba(255, 255, 255, 0.1)' }}
+                    <div 
+                        style={{ height: '0.75rem', background: '#334155', borderRadius: '1rem', overflow: 'hidden', marginBottom: '0.75rem' }}
+                        title={`Storage limit: 100 MB per user`}
                     >
-                        View Large Files
-                    </button>
+                        <div style={{ 
+                            width: `${percentage}%`, 
+                            height: '100%', 
+                            background: getStorageColor(), 
+                            transition: 'width 1s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.5s ease' 
+                        }}></div>
+                    </div>
+                    
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem' }}>
+                        <div>
+                            <p style={{ fontSize: '0.9rem', color: '#cbd5e1', marginBottom: '0.25rem' }}>{getStatusMessage()}</p>
+                            <p style={{ fontSize: '0.8rem', color: '#64748b' }}>{(remaining / 1024 / 1024).toFixed(2)} MB remaining</p>
+                        </div>
+                        <button 
+                            onClick={handleViewLargeFiles}
+                            style={{ border: 'none', color: '#cbd5e1', fontSize: '0.85rem', cursor: 'pointer', padding: 0, background: 'none', textDecoration: 'underline' }}
+                        >
+                            View Large Files
+                        </button>
+                    </div>
                 </div>
-            </div>
+            )}
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                 <div>
@@ -156,34 +170,42 @@ const ManageSpace = () => {
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead>
                         <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.05)', textAlign: 'left', color: '#64748b' }}>
-                            <th style={{ padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Name</th>
-                            <th style={{ padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Uploader</th>
-                            <th style={{ padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Size</th>
-                            <th style={{ padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Date</th>
-                            <th style={{ padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.1em', textAlign: 'right' }}>Actions</th>
+                            <th style={{ padding: '0.75rem 1.5rem', fontSize: '0.75rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Name</th>
+                            <th style={{ padding: '0.75rem 1.5rem', fontSize: '0.75rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Uploader</th>
+                            <th style={{ padding: '0.75rem 1.5rem', fontSize: '0.75rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Size</th>
+                            <th style={{ padding: '0.75rem 1.5rem', fontSize: '0.75rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Date</th>
+                            <th style={{ padding: '0.75rem 1.5rem', fontSize: '0.75rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.1em', textAlign: 'right' }}>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {files.map(file => (
+                        {loading ? (
+                             Array.from({ length: 5 }).map((_, i) => (
+                                <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
+                                    <td colSpan="5" style={{ padding: '0.75rem 1.5rem' }}>
+                                        <div className="skeleton-line" style={{ width: '100%', height: '24px' }} />
+                                    </td>
+                                </tr>
+                             ))
+                        ) : files.map(file => (
                             <tr key={file._id} style={{ borderBottom: '1px solid rgba(255,255,255,0.02)', transition: 'background 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'} onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}>
-                                <td style={{ padding: '1rem 1.5rem' }}>
+                                <td style={{ padding: '0.75rem 1.5rem' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                         <File size={16} className="text-white" />
-                                        <span style={{ fontWeight: '700', color: '#f1f5f9', fontSize: '0.95rem' }}>{file.originalName}</span>
+                                        <span style={{ fontWeight: '600', color: '#f1f5f9', fontSize: '0.95rem' }}>{file.originalName}</span>
                                     </div>
                                 </td>
-                                <td style={{ padding: '1rem 1.5rem', color: '#cbd5e1' }}>{file.uploader?.userId || 'Unknown'}</td>
-                                <td style={{ padding: '1rem 1.5rem', color: '#94a3b8' }}>{(file.size / 1024).toFixed(1)} KB</td>
-                                <td style={{ padding: '1rem 1.5rem', color: '#94a3b8' }}>{new Date(file.uploadedAt).toLocaleDateString()}</td>
-                                <td style={{ padding: '1rem 1.5rem' }}>
+                                <td style={{ padding: '0.75rem 1.5rem', color: '#cbd5e1' }}>{file.uploader?.userId || 'Unknown'}</td>
+                                <td style={{ padding: '0.75rem 1.5rem', color: '#94a3b8' }}>{(file.size / 1024).toFixed(1)} KB</td>
+                                <td style={{ padding: '0.75rem 1.5rem', color: '#94a3b8' }}>{new Date(file.uploadedAt).toLocaleDateString()}</td>
+                                <td style={{ padding: '0.75rem 1.5rem' }}>
                                     <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-                                        <button onClick={() => setSelectedFile(file)} title="View" style={{ background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: '8px', borderRadius: '8px', transition: 'all 0.2s' }} onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'; e.currentTarget.style.color = 'white'; }} onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#94a3b8'; }}><Eye size={18} /></button>
-                                        <button onClick={() => handleDeleteClick(file._id)} title="Delete" style={{ background: 'transparent', border: 'none', color: '#64748b', cursor: 'pointer', padding: '8px', borderRadius: '8px', transition: 'all 0.2s' }} onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'; e.currentTarget.style.color = '#ef4444'; }} onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#64748b'; }}><Trash2 size={18} /></button>
+                                        <button onClick={() => setSelectedFile(file)} title="View" style={{ background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: '6px', borderRadius: '8px', transition: 'all 0.2s' }} onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'; e.currentTarget.style.color = 'white'; }} onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#94a3b8'; }}><Eye size={18} /></button>
+                                        <button onClick={() => handleDeleteClick(file._id)} title="Delete" style={{ background: 'transparent', border: 'none', color: '#64748b', cursor: 'pointer', padding: '6px', borderRadius: '8px', transition: 'all 0.2s' }} onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'; e.currentTarget.style.color = '#ef4444'; }} onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#64748b'; }}><Trash2 size={18} /></button>
                                     </div>
                                 </td>
                             </tr>
                         ))}
-                        {files.length === 0 && (
+                        {!loading && files.length === 0 && (
                             <tr>
                                 <td colSpan="5" style={{ padding: '4rem 2rem', textAlign: 'center', color: '#475569' }}>
                                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>

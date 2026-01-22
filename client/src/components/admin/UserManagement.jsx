@@ -40,7 +40,7 @@ const UserManagement = () => {
 
     // Virtualization Setup
     const rowVirtualizer = useVirtualizer({
-        count: users.length,
+        count: parentRef.current ? users.length : 0,
         getScrollElement: () => parentRef.current,
         estimateSize: () => isMobile ? 140 : 70,
         overscan: 5,
@@ -110,7 +110,7 @@ const UserManagement = () => {
                 <div 
                     ref={parentRef} 
                     className="admin-scroll-area"
-                    style={{ height: users.length > 0 ? '500px' : '200px' }}
+                    style={{ height: users.length > 0 ? '500px' : 'auto', minHeight: '200px' }}
                 >
                     {!isMobile && (
                         <div className="admin-table-header user-header" style={{ position: 'sticky', top: 0, zIndex: 10, background: '#0f172a' }}>
@@ -121,112 +121,142 @@ const UserManagement = () => {
                         </div>
                     )}
 
-                    {users.length === 0 && !loading && (
+                    {loading && users.length === 0 ? (
+                        <div style={{ padding: '1rem' }}>
+                            {Array.from({ length: 6 }).map((_, i) => (
+                                isMobile ? (
+                                    <div key={i} className="mobile-admin-card" style={{ marginBottom: '1rem' }}>
+                                         <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
+                                            <div className="skeleton-line" style={{ width: '40px', height: '40px', borderRadius: '12px' }} />
+                                            <div style={{ flex: 1 }}>
+                                                <div className="skeleton-line" style={{ width: '60%', height: '18px', marginBottom: '0.5rem' }} />
+                                                <div className="skeleton-line" style={{ width: '30%', height: '14px' }} />
+                                            </div>
+                                         </div>
+                                         <div className="skeleton-line" style={{ width: '100%', height: '1px', marginBottom: '1rem' }} />
+                                         <div className="skeleton-line" style={{ width: '40%', height: '14px' }} />
+                                    </div>
+                                ) : (
+                                    <div key={i} className="admin-table-row user-row" style={{ borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
+                                        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                                            <div className="skeleton-line" style={{ width: '40px', height: '40px', borderRadius: '12px' }} />
+                                            <div className="skeleton-line" style={{ width: '120px', height: '16px' }} />
+                                        </div>
+                                        <div className="skeleton-line" style={{ width: '80px', height: '24px', borderRadius: '2rem' }} />
+                                        <div className="skeleton-line" style={{ width: '100px', height: '16px' }} />
+                                        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                                            <div className="skeleton-line" style={{ width: '30px', height: '30px', borderRadius: '10px' }} />
+                                        </div>
+                                    </div>
+                                )
+                            ))}
+                        </div>
+                    ) : users.length === 0 ? (
                         <div className="empty-state" style={{ padding: '4rem 2rem', textAlign: 'center', color: '#475569', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
                             <User size={48} strokeWidth={1} style={{ opacity: 0.2 }} />
                             <p>No user entities found in the system registry.</p>
                         </div>
-                    )}
+                    ) : (
+                        <div style={{ height: `${rowVirtualizer.getTotalSize()}px`, width: '100%', position: 'relative' }}>
+                            {rowVirtualizer.getVirtualItems().map(virtualRow => {
+                                const user = users[virtualRow.index];
+                                const isAdmin = user.role === 'admin';
 
-                    <div style={{ height: `${rowVirtualizer.getTotalSize()}px`, width: '100%', position: 'relative' }}>
-                        {rowVirtualizer.getVirtualItems().map(virtualRow => {
-                            const user = users[virtualRow.index];
-                            const isAdmin = user.role === 'admin';
+                                if (isMobile) {
+                                    return (
+                                        <div 
+                                            key={user._id}
+                                            style={{
+                                                position: 'absolute', top: 0, left: 0, width: '100%',
+                                                height: `${virtualRow.size}px`,
+                                                transform: `translateY(${virtualRow.start}px)`,
+                                                padding: '0.5rem 1rem'
+                                            }}
+                                        >
+                                            <div className="mobile-admin-card">
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                                    <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                                                        <div className={`avatar-box ${isAdmin ? 'admin' : ''}`}>
+                                                            {isAdmin ? <Shield size={16} /> : <User size={16} />}
+                                                        </div>
+                                                        <div>
+                                                            <p className="entity-name">{user.userId}</p>
+                                                            <span className={`role-badge ${isAdmin ? 'admin' : ''}`}>
+                                                                {user.role}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <div style={{ position: 'relative' }}>
+                                                        <button 
+                                                            onClick={() => setActiveMenu(activeMenu === user._id ? null : user._id)}
+                                                            className="icon-btn-ghost"
+                                                        >
+                                                            <MoreVertical size={20} />
+                                                        </button>
+                                                        <AnimatePresence>
+                                                            {activeMenu === user._id && !isAdmin && (
+                                                                <motion.div 
+                                                                    initial={{ opacity: 0, scale: 0.95 }}
+                                                                    animate={{ opacity: 1, scale: 1 }}
+                                                                    exit={{ opacity: 0, scale: 0.95 }}
+                                                                    className="admin-overflow-menu"
+                                                                >
+                                                                    <button onClick={() => handleDeleteClick(user._id)} className="delete-action">
+                                                                        <Trash2 size={16} /> Terminate User
+                                                                    </button>
+                                                                </motion.div>
+                                                            )}
+                                                        </AnimatePresence>
+                                                    </div>
+                                                </div>
+                                                <div className="card-footer">
+                                                    <div className="stat-item">
+                                                        <Database size={14} />
+                                                        <span>{(user.storageUsed / 1048576).toFixed(2)} MB Used</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                }
 
-                            if (isMobile) {
                                 return (
                                     <div 
                                         key={user._id}
+                                        className="admin-table-row user-row"
                                         style={{
                                             position: 'absolute', top: 0, left: 0, width: '100%',
                                             height: `${virtualRow.size}px`,
                                             transform: `translateY(${virtualRow.start}px)`,
-                                            padding: '0.5rem 1rem'
                                         }}
                                     >
-                                        <div className="mobile-admin-card">
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                                <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-                                                    <div className={`avatar-box ${isAdmin ? 'admin' : ''}`}>
-                                                        {isAdmin ? <Shield size={16} /> : <User size={16} />}
-                                                    </div>
-                                                    <div>
-                                                        <p className="entity-name">{user.userId}</p>
-                                                        <span className={`role-badge ${isAdmin ? 'admin' : ''}`}>
-                                                            {user.role}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                                <div style={{ position: 'relative' }}>
-                                                    <button 
-                                                        onClick={() => setActiveMenu(activeMenu === user._id ? null : user._id)}
-                                                        className="icon-btn-ghost"
-                                                    >
-                                                        <MoreVertical size={20} />
-                                                    </button>
-                                                    <AnimatePresence>
-                                                        {activeMenu === user._id && !isAdmin && (
-                                                            <motion.div 
-                                                                initial={{ opacity: 0, scale: 0.95 }}
-                                                                animate={{ opacity: 1, scale: 1 }}
-                                                                exit={{ opacity: 0, scale: 0.95 }}
-                                                                className="admin-overflow-menu"
-                                                            >
-                                                                <button onClick={() => handleDeleteClick(user._id)} className="delete-action">
-                                                                    <Trash2 size={16} /> Terminate User
-                                                                </button>
-                                                            </motion.div>
-                                                        )}
-                                                    </AnimatePresence>
-                                                </div>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', minWidth: 0 }}>
+                                            <div className={`avatar-box ${isAdmin ? 'admin' : ''}`}>
+                                                {isAdmin ? <Shield size={18} /> : <User size={18} />}
                                             </div>
-                                            <div className="card-footer">
-                                                <div className="stat-item">
-                                                    <Database size={14} />
-                                                    <span>{(user.storageUsed / 1048576).toFixed(2)} MB Used</span>
-                                                </div>
-                                            </div>
+                                            <span className="entity-name"><span>{user.userId}</span></span>
+                                        </div>
+                                        <div>
+                                            <span className={`role-badge ${isAdmin ? 'admin' : ''}`}>
+                                                {user.role}
+                                            </span>
+                                        </div>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#cbd5e1', fontWeight: 600 }}>
+                                            <Database size={16} style={{ color: '#64748b' }} />
+                                            {(user.storageUsed / 1048576).toFixed(2)} MB
+                                        </div>
+                                        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                                            {!isAdmin && (
+                                                <button onClick={() => handleDeleteClick(user._id)} className="icon-btn-danger" title="Delete User">
+                                                    <Trash2 size={18} />
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
                                 );
-                            }
-
-                            return (
-                                <div 
-                                    key={user._id}
-                                    className="admin-table-row user-row"
-                                    style={{
-                                        position: 'absolute', top: 0, left: 0, width: '100%',
-                                        height: `${virtualRow.size}px`,
-                                        transform: `translateY(${virtualRow.start}px)`,
-                                    }}
-                                >
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', minWidth: 0 }}>
-                                        <div className={`avatar-box ${isAdmin ? 'admin' : ''}`}>
-                                            {isAdmin ? <Shield size={18} /> : <User size={18} />}
-                                        </div>
-                                        <span className="entity-name"><span>{user.userId}</span></span>
-                                    </div>
-                                    <div>
-                                        <span className={`role-badge ${isAdmin ? 'admin' : ''}`}>
-                                            {user.role}
-                                        </span>
-                                    </div>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#cbd5e1', fontWeight: 600 }}>
-                                        <Database size={16} style={{ color: '#64748b' }} />
-                                        {(user.storageUsed / 1048576).toFixed(2)} MB
-                                    </div>
-                                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                                        {!isAdmin && (
-                                            <button onClick={() => handleDeleteClick(user._id)} className="icon-btn-danger" title="Delete User">
-                                                <Trash2 size={18} />
-                                            </button>
-                                        )}
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
+                            })}
+                        </div>
+                    )}
                 </div>
             </div>
 

@@ -1,8 +1,24 @@
-import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useEffect } from 'react';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { X, Info, Code, Users } from 'lucide-react';
 
 const AboutModal = ({ isOpen, onClose }) => {
+    const shouldReduceMotion = useReducedMotion();
+
+    useEffect(() => {
+        const onKeyDown = (e) => {
+            if (e.key === 'Escape') onClose();
+        };
+        if (isOpen) {
+            document.addEventListener('keydown', onKeyDown);
+            document.body.style.overflow = 'hidden';
+        }
+        return () => {
+            document.removeEventListener('keydown', onKeyDown);
+            document.body.style.overflow = '';
+        };
+    }, [isOpen, onClose]);
+
     return (
         <AnimatePresence>
             {isOpen && (
@@ -18,15 +34,20 @@ const AboutModal = ({ isOpen, onClose }) => {
                     
                     {/* Modal Content */}
                     <motion.div 
-                        initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                        initial={shouldReduceMotion ? false : { scale: 0.9, opacity: 0, y: 20 }}
                         animate={{ scale: 1, opacity: 1, y: 0 }}
-                        exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                        exit={shouldReduceMotion ? false : { scale: 0.9, opacity: 0, y: 20 }}
                         className="glass"
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="about-title"
+                        tabIndex={-1}
                         style={{ position: 'relative', width: '90%', maxWidth: '600px', padding: '1.5rem', borderRadius: '1.5rem', maxHeight: '90vh', overflowY: 'auto' }}
                     >
                         <button 
                             onClick={onClose}
-                            style={{ position: 'absolute', right: '1.5rem', top: '1.5rem', background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}
+                            aria-label="Close About modal"
+                            style={{ position: 'absolute', right: '1.5rem', top: '1.5rem', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
                         >
                             <X size={24} />
                         </button>
@@ -36,8 +57,8 @@ const AboutModal = ({ isOpen, onClose }) => {
                                 <Info size={28} color="#3b82f6" />
                             </div>
                             <div>
-                                <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>About The App</h2>
-                                <p style={{ color: '#94a3b8', fontSize: '0.9rem' }}>Version 1.0.0</p>
+                                <h2 id="about-title" style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>About The App</h2>
+                                <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Version 1.0.0</p>
                             </div>
                         </div>
 

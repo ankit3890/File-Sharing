@@ -4,6 +4,7 @@ import api from '../../utils/api';
 import ConfirmModal from '../ConfirmModal';
 import PromptModal from '../PromptModal';
 import { useVirtualizer } from '@tanstack/react-virtual';
+import '../../pages/Dashboard/dashboard.css';
 
 const AdminQueue = ({ pendingAttendance, storageAlerts, recentFiles, onRefresh }) => {
     const [confirmState, setConfirmState] = useState({ isOpen: false, id: null, status: '', title: '', message: '' });
@@ -16,6 +17,11 @@ const AdminQueue = ({ pendingAttendance, storageAlerts, recentFiles, onRefresh }
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
+
+    // Guard against undefined recentFiles (API delay safety)
+    if (!recentFiles) {
+        return <div className="empty-state">Loading recent files...</div>;
+    }
 
     // Virtualization for system-wide recent files
     const rowVirtualizer = useVirtualizer({
@@ -238,56 +244,6 @@ const AdminQueue = ({ pendingAttendance, storageAlerts, recentFiles, onRefresh }
                 placeholder="Enter admin remark (optional)"
                 confirmText="❌ Reject"
             />
-
-            <style>{`
-                .admin-queue-container .section-title { font-size: 0.75rem; color: #64748b; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 800; }
-                .admin-queue-container .empty-state { display: flex; align-items: center; gap: 0.6rem; color: #64748b; background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 0.75rem; border: 1px dashed rgba(255,255,255,0.05); font-size: 0.85rem; font-weight: 500; }
-                .admin-queue-container .empty-state.success { color: #10b981; background: rgba(16, 185, 129, 0.03); border-color: rgba(16, 185, 129, 0.1); }
-                
-                .admin-queue-container .admin-list { display: flex; flex-direction: column; gap: 0.75rem; }
-                .admin-queue-container .admin-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 1rem; border-radius: 0.75rem; transition: all 0.2s ease; }
-                .admin-queue-container .mobile-admin-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 1.25rem; padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem; }
-                .admin-queue-container .admin-card:hover { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.1); }
-                .admin-queue-container .admin-card.alert-row { background: rgba(239, 68, 68, 0.05); border-color: rgba(239, 68, 68, 0.1); }
-                
-                .admin-queue-container .card-top { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; }
-                .admin-queue-container .user-info { display: flex; align-items: center; gap: 0.75rem; }
-                .admin-queue-container .avatar-mini { width: 32px; height: 32px; background: rgba(255,255,255,0.05); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #94a3b8; border: 1px solid rgba(255,255,255,0.1); }
-                .admin-queue-container .user-name { font-weight: 700; color: #f1f5f9; font-size: 0.95rem; }
-                .admin-queue-container .user-name.alert { color: #fca5a5; }
-                .admin-queue-container .card-sub { font-size: 0.75rem; color: #64748b; font-weight: 500; }
-                .admin-queue-container .card-sub.alert { color: #f87171; }
-                
-                .admin-queue-container .action-btns { display: flex; gap: 0.5rem; }
-                .admin-queue-container .btn-approve, .admin-queue-container .btn-reject { padding: 0.4rem 1rem; border: none; border-radius: 0.75rem; cursor: pointer; font-size: 0.8rem; font-weight: 800; transition: all 0.2s; display: flex; align-items: center; justify-content: center; min-height: 32px; }
-                .admin-queue-container .btn-approve { background: #10b981; color: white; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); }
-                .admin-queue-container .btn-approve:hover { background: #059669; transform: translateY(-1px); box-shadow: 0 6px 16px rgba(16, 185, 129, 0.3); }
-                .admin-queue-container .btn-reject { background: #ef4444; color: white; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2); }
-                .admin-queue-container .btn-reject:hover { background: #dc2626; transform: translateY(-1px); box-shadow: 0 6px 16px rgba(239, 68, 68, 0.3); }
-                
-                .admin-queue-container .storage-value { font-size: 0.9rem; font-weight: 800; color: #ef4444; }
-                .admin-queue-container .icon-box-alert { padding: 0.5rem; background: rgba(239, 68, 68, 0.1); border-radius: 0.5rem; color: #ef4444; }
-                
-                .admin-queue-container .file-name { font-weight: 600; font-size: 0.9rem; color: #f1f5f9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-                .admin-queue-container .file-sub-info { display: flex; gap: 0.75rem; margin-top: 2px; flex-wrap: wrap; }
-                .admin-queue-container .meta-item { display: flex; align-items: center; gap: 0.3rem; font-size: 0.7rem; color: #64748b; font-weight: 500; }
-                .admin-queue-container .meta-item.time { color: #3b82f6; }
-                .admin-queue-container .file-size { font-size: 0.75rem; font-weight: 700; color: #94a3b8; }
-                
-                @media (max-width: 640px) {
-                    .admin-queue-container .action-btns { width: 100%; flex-direction: column; gap: 0.75rem; margin-top: 0.5rem; }
-                    .admin-queue-container .btn-approve, .admin-queue-container .btn-reject { width: 100%; height: 32px; justify-content: center; font-size: 0.75rem; border-radius: 0.5rem; }
-                    .admin-queue-container .card-top { flex-direction: column; align-items: flex-start; }
-                    .admin-queue-container .avatar-mini { display: flex; width: 40px; height: 40px; }
-                    .admin-queue-container .user-name { font-size: 1.1rem; }
-                    .admin-queue-container .card-sub { font-size: 0.85rem; }
-                }
-
-                @media (max-width: 480px) {
-                   .admin-queue-container { padding: 1rem !important; }
-                   .admin-queue-container .file-card { padding: 0.75rem !important; }
-                }
-            `}</style>
         </div>
     );
 };

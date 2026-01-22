@@ -95,22 +95,22 @@ const Layout = () => {
                         <FileText size={20} /> 
                         <span>Projects</span>
                     </NavLink>
+                    
+                    <NavLink to="/attendance" className={navItemClass} style={navItemStyle} title="Attendance" onClick={handleNavClick}>
+                        <CalendarCheck size={20} /> 
+                        <span>Attendance</span>
+                    </NavLink>
+
+                    {/* Spacer for Hierarchy */}
+                    <div style={{ height: '0.5rem' }} />
 
                     <NavLink to="/manage-space" className={navItemClass} style={navItemStyle} title="Manage Space" onClick={handleNavClick}>
                         <Settings size={20} /> 
                         <span>Manage Space</span>
                     </NavLink>
 
-                    <NavLink to="/attendance" className={navItemClass} style={navItemStyle} title="Attendance" onClick={handleNavClick}>
-                        <CalendarCheck size={20} /> 
-                        <div style={{ display: 'flex', flexDirection: 'column' }}>
-                            <span>Attendance</span>
-                            <span style={{ fontSize: '0.65rem', color: '#64748b' }}>Track and manage daily attendance</span>
-                        </div>
-                    </NavLink>
-
                     {user.role === 'admin' && (
-                        <div style={{ marginTop: '2rem', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '1rem' }}>
+                        <div style={{ marginTop: '0.5rem', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '1rem' }}>
                             <p style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: '#64748b', paddingLeft: '0.75rem', marginBottom: '0.5rem', fontWeight: 'bold' }}>Admin</p>
                             <NavLink to="/admin" className={navItemClass} style={navItemStyle} title="Admin Panel" onClick={handleNavClick}>
                                 <Users size={20} /> 
@@ -122,7 +122,7 @@ const Layout = () => {
                     <button 
                         onClick={() => { setShowAbout(true); handleNavClick(); }} 
                         className={navItemClass} 
-                        style={{ ...navItemStyle, background: 'none', border: 'none', cursor: 'pointer', width: '100%', marginTop: 'auto' }}
+                        style={{ ...navItemStyle, background: 'none', border: 'none', cursor: 'pointer', width: '100%', marginTop: 'auto', paddingTop: '1rem' }}
                         title="About"
                     >
                         <Info size={20} />
@@ -132,60 +132,73 @@ const Layout = () => {
 
                 {/* Footer User Profile */}
                 <div style={{ padding: '1rem', borderTop: '1px solid var(--border)', whiteSpace: 'nowrap' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-                        <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#27272a', border: '1px solid #3f3f46', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', flexShrink: 0, color: 'white' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem' }}>
+                        {/* Avatar */}
+                        <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#27272a', border: '1px solid #3f3f46', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', flexShrink: 0, color: 'white', fontSize: '0.9rem' }}>
                             {user.userId.charAt(0).toUpperCase()}
                         </div>
-                        <div style={{ minWidth: 0, flex: 1, display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                            {/* Row 1: Name + Edit Button */}
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-                                <p style={{ fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '0.95rem' }}>
-                                    {user.name || 'Set Name'}
-                                </p>
-                                <button 
-                                    onClick={() => setShowEditProfile(true)}
-                                    style={{ 
-                                        background: 'transparent', 
-                                        border: 'none', 
-                                        padding: '4px', 
-                                        cursor: 'pointer',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        borderRadius: '4px',
-                                        color: '#94a3b8' 
-                                    }}
-                                    className="hover:bg-slate-700/50 hover:text-white transition-colors"
-                                    title="Edit Profile"
-                                >
-                                    <Edit2 size={12} />
-                                </button>
-                            </div>
-
-                            {/* Row 2: User ID */}
-                            <p style={{ fontSize: '0.75rem', color: '#94a3b8', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                {user.userId}
-                            </p>
-
-                            {/* Row 3: Role Badge */}
+                        
+                        {/* Info Column */}
+                        <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                            <span style={{ fontWeight: '600', fontSize: '0.9rem', color: 'white', lineHeight: '1.2', textOverflow: 'ellipsis', overflow: 'hidden' }}>
+                                {user.name || 'Set Name'}
+                            </span>
+                            <span style={{ fontSize: '0.75rem', color: '#a1a1aa', lineHeight: '1.2' }}>{user.userId}</span>
                             <div style={{ marginTop: '2px' }}>
                                 <span style={{ 
-                                    fontSize: '0.65rem', 
-                                    padding: '2px 6px', 
-                                    borderRadius: '4px', 
-                                    background: user.role === 'admin' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.1)', 
-                                    color: user.role === 'admin' ? '#ffffff' : '#d4d4d8',
-                                    border: user.role === 'admin' ? '1px solid rgba(255, 255, 255, 0.2)' : '1px solid rgba(255, 255, 255, 0.1)',
-                                    textTransform: 'uppercase',
-                                    fontWeight: 'bold',
+                                    fontSize: '0.6rem', 
+                                    textTransform: 'uppercase', 
+                                    fontWeight: 'bold', 
+                                    color: user.role === 'admin' ? '#fbbf24' : '#52525b',
                                     letterSpacing: '0.5px'
                                 }}>
                                     {user.role}
                                 </span>
                             </div>
                         </div>
+
+                        {/* Edit Button (Right Aligned) */}
+                        <button 
+                            onClick={() => setShowEditProfile(true)}
+                            style={{ 
+                                marginLeft: 'auto',
+                                background: 'transparent', 
+                                border: 'none', 
+                                padding: '6px', 
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                borderRadius: '6px',
+                                color: '#52525b',
+                                transition: 'color 0.2s, background 0.2s'
+                            }}
+                            className="hover:bg-zinc-800 hover:text-white"
+                            title="Edit Profile"
+                        >
+                            <Edit2 size={16} />
+                        </button>
                     </div>
-                    <button onClick={handleLogout} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem', background: 'transparent', border: '1px solid var(--border)', borderRadius: '0.5rem', color: '#94a3b8', cursor: 'pointer', justifyContent: 'center' }}>
+
+                    <button 
+                        onClick={handleLogout} 
+                        className="hover:bg-zinc-800 hover:text-white transition-colors"
+                        style={{ 
+                            width: '100%', 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: '0.5rem', 
+                            padding: '0.6rem', 
+                            background: 'transparent', 
+                            border: '1px solid #3f3f46', 
+                            borderRadius: '0.5rem', 
+                            color: '#a1a1aa', 
+                            cursor: 'pointer', 
+                            justifyContent: 'center', 
+                            fontSize: '0.85rem',
+                            fontWeight: '500'
+                        }}
+                    >
                         <LogOut size={16} /> Logout
                     </button>
                 </div>
@@ -198,7 +211,7 @@ const Layout = () => {
                     if (!collapsed) setCollapsed(true);
                 }}
             >
-                <header style={{ padding: '1.5rem 2rem', background: 'var(--bg-dark)', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '1rem', position: 'sticky', top: 0, zIndex: 10 }}>
+                <header style={{ padding: '1.75rem 2rem', background: 'var(--bg-dark)', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '1rem', position: 'sticky', top: 0, zIndex: 10 }}>
                     <button 
                         onClick={(e) => { e.stopPropagation(); setCollapsed(!collapsed); }}
                         style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}
@@ -208,7 +221,7 @@ const Layout = () => {
                     </button>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                         <img src={logo} alt="Logo" style={{ height: '40px', objectFit: 'contain' }} />
-                        <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>P.C Bindal and Co.</h1>
+                        {(!isMobile || collapsed) && <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>P.C Bindal and Co.</h1>}
                     </div>
                 </header>
                 <div style={{ padding: '2rem', flex: 1 }}>

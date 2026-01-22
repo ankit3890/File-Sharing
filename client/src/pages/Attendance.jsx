@@ -427,28 +427,40 @@ const Attendance = () => {
             {user.role === 'admin' && (
                 <>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.25rem', marginBottom: '2rem' }}>
-                        {[
-                            { label: 'Total Records', value: stats.total, color: '#3b82f6', icon: <Calendar size={20} />, sub: 'Based on current filters' },
-                            { label: 'Approved', value: stats.approved, color: '#10b981', icon: <CheckCircle size={20} />, sub: 'Based on current filters' },
-                            { label: 'Rejected', value: stats.rejected, color: '#ef4444', icon: <XCircle size={20} />, sub: 'Based on current filters' },
-                            { label: 'Pending Approval', value: stats.pending, color: '#f59e0b', icon: <Clock size={20} />, sub: 'Based on current filters' },
-                        ].map((stat, i) => (
-                            <motion.div 
-                                key={i}
-                                initial={{ opacity: 0, scale: 0.95 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                transition={{ delay: i * 0.05 }}
-                                className="glass" 
-                                style={{ padding: '1.25rem', borderRadius: '1rem', display: 'flex', alignItems: 'center', gap: '1rem', border: `1px solid ${stat.color}20`, position: 'relative' }}
-                            >
-                                <div style={{ padding: '0.75rem', background: `${stat.color}15`, borderRadius: '0.75rem', color: stat.color }}>{stat.icon}</div>
-                                <div>
-                                    <p style={{ fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{stat.label}</p>
-                                    <p style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{stat.value}</p>
-                                    <p style={{ fontSize: '0.6rem', color: '#64748b', marginTop: '0.2rem' }}>{stat.sub}</p>
-                                </div>
-                            </motion.div>
-                        ))}
+                        {loading && attendance.length === 0 ? (
+                             Array.from({ length: 4 }).map((_, i) => (
+                                 <div className="glass" key={i} style={{ padding: '1.25rem', borderRadius: '1rem', display: 'flex', alignItems: 'center', gap: '1rem', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                      <div className="skeleton-line" style={{ width: '40px', height: '40px', borderRadius: '0.75rem' }} />
+                                      <div style={{ flex: 1 }}>
+                                          <div className="skeleton-line" style={{ width: '60%', height: '12px', marginBottom: '0.5rem' }} />
+                                          <div className="skeleton-line" style={{ width: '40%', height: '24px' }} />
+                                      </div>
+                                 </div>
+                             ))
+                        ) : (
+                            [
+                                { label: 'Total Records', value: stats.total, color: '#3b82f6', icon: <Calendar size={20} />, sub: 'Based on current filters' },
+                                { label: 'Approved', value: stats.approved, color: '#10b981', icon: <CheckCircle size={20} />, sub: 'Based on current filters' },
+                                { label: 'Rejected', value: stats.rejected, color: '#ef4444', icon: <XCircle size={20} />, sub: 'Based on current filters' },
+                                { label: 'Pending Approval', value: stats.pending, color: '#f59e0b', icon: <Clock size={20} />, sub: 'Based on current filters' },
+                            ].map((stat, i) => (
+                                <motion.div 
+                                    key={i}
+                                    initial={{ opacity: 0, scale: 0.95 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    transition={{ delay: i * 0.05 }}
+                                    className="glass" 
+                                    style={{ padding: '1.25rem', borderRadius: '1rem', display: 'flex', alignItems: 'center', gap: '1rem', border: `1px solid ${stat.color}20`, position: 'relative' }}
+                                >
+                                    <div style={{ padding: '0.75rem', background: `${stat.color}15`, borderRadius: '0.75rem', color: stat.color }}>{stat.icon}</div>
+                                    <div>
+                                        <p style={{ fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{stat.label}</p>
+                                        <p style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{stat.value}</p>
+                                        <p style={{ fontSize: '0.6rem', color: '#64748b', marginTop: '0.2rem' }}>{stat.sub}</p>
+                                    </div>
+                                </motion.div>
+                            ))
+                        )}
                     </div>
 
                     <div className="glass" style={{ padding: '1.5rem', borderRadius: '1rem', marginBottom: '2rem', display: 'flex', flexWrap: 'wrap', gap: '1.5rem', alignItems: 'flex-end' }}>
@@ -588,8 +600,18 @@ const Attendance = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {loading ? (
-                                <tr><td colSpan="7" style={{ padding: '2rem', textAlign: 'center', color: '#94a3b8' }}>Loading records...</td></tr>
+                            {loading && attendance.length === 0 ? (
+                                Array.from({ length: 8 }).map((_, i) => (
+                                    <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
+                                        {user.role === 'admin' && <td style={{ padding: '1rem' }}><div className="skeleton-line" style={{ width: '20px', height: '20px' }} /></td>}
+                                        {user.role === 'admin' && <td style={{ padding: '1rem' }}><div className="skeleton-line" style={{ width: '120px' }} /></td>}
+                                        <td style={{ padding: '1rem' }}><div className="skeleton-line" style={{ width: '100px' }} /></td>
+                                        <td style={{ padding: '1rem' }}><div className="skeleton-line" style={{ width: '80px', borderRadius: '1rem' }} /></td>
+                                        <td style={{ padding: '1rem' }}><div className="skeleton-line" style={{ width: '80px' }} /></td>
+                                        <td style={{ padding: '1rem' }}><div className="skeleton-line" style={{ width: '140px' }} /></td>
+                                        {user.role === 'admin' && <td style={{ padding: '1rem' }}><div className="skeleton-line" style={{ width: '100px', marginLeft: 'auto' }} /></td>}
+                                    </tr>
+                                ))
                             ) : attendance.length === 0 ? (
                                 <tr><td colSpan="7" style={{ padding: '3rem', textAlign: 'center', color: '#64748b' }}>
                                     <div style={{ padding: '2rem' }}>

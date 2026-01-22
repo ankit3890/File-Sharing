@@ -31,20 +31,37 @@ const Projects = () => {
         fetchProjects();
     }, []);
 
-    if (loading) {
-        return <SkeletonLoader />;
-    }
+    const ProjectSkeleton = () => (
+        <div className="glass" style={{ padding: '1.5rem', borderRadius: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                <div style={{ padding: '0.75rem', background: 'rgba(255,255,255,0.05)', borderRadius: '0.5rem', width: '48px', height: '48px' }} />
+                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    <div className="skeleton-line" style={{ width: '60%', height: '18px' }} />
+                </div>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem' }}>
+                <div className="skeleton-line" style={{ width: '30%', height: '12px' }} />
+                <div className="skeleton-line" style={{ width: '20%', height: '12px' }} />
+            </div>
+        </div>
+    );
 
     return (
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
                 <h2 style={{ fontSize: '1.25rem', fontWeight: 800 }}>My Projects</h2>
-                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#94a3b8', background: 'rgba(255,255,255,0.05)', padding: '0.3rem 0.75rem', borderRadius: '1rem' }}>
-                    {projects.length} TOTAL PROJECTS
-                </span>
+                {!loading && (
+                    <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#94a3b8', background: 'rgba(255,255,255,0.05)', padding: '0.3rem 0.75rem', borderRadius: '1rem' }}>
+                        {projects.length} TOTAL PROJECTS
+                    </span>
+                )}
             </div>
 
-            {projects.length === 0 ? (
+            {loading ? (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '1.5rem' }}>
+                    {Array.from({ length: 6 }).map((_, i) => <ProjectSkeleton key={i} />)}
+                </div>
+            ) : projects.length === 0 ? (
                 <div
                     className="glass"
                     style={{

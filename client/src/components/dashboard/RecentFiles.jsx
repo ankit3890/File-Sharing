@@ -6,6 +6,7 @@ import ConfirmModal from '../ConfirmModal';
 import { useAuth } from '../../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useVirtualizer } from '@tanstack/react-virtual';
+import '../../pages/Dashboard/dashboard.css';
 
 const RecentFiles = ({ files, onRefresh }) => {
     const { user } = useAuth();
@@ -257,32 +258,6 @@ const RecentFiles = ({ files, onRefresh }) => {
                 variant="danger" 
                 confirmText="Delete File"
             />
-
-            <style>{`
-                .table-header { padding: 0.75rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.05); display: grid; grid-template-columns: minmax(40px, auto) 1.5fr 1fr 1fr 0.8fr 1fr; gap: 1rem; color: #64748b; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; background: rgba(0,0,0,0.1); }
-                .file-row { display: grid; grid-template-columns: minmax(40px, auto) 1.5fr 1fr 1fr 0.8fr 1fr; gap: 1rem; padding: 0.75rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.03); align-items: center; transition: background 0.2s; }
-                .file-row:hover { background: rgba(255,255,255,0.02); }
-                .file-name { font-weight: 600; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #f1f5f9; }
-                .file-desc { font-size: 0.75rem; color: #64748b; margin-top: 2px; }
-                .file-meta p { font-size: 0.85rem; color: #cbd5e1; margin: 0; }
-                .uploader-name { font-size: 0.85rem; color: #cbd5e1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-                .badge-new { font-size: 0.6rem; background: #3b82f6; color: white; padding: 0.1rem 0.4rem; border-radius: 4px; font-weight: 800; letter-spacing: 0.025em; }
-                .actions-cell { display: flex; gap: 0.1rem; justify-content: flex-end; }
-                .btn-icon, .btn-icon-danger { background: none; border: none; color: #64748b; cursor: pointer; padding: 8px; border-radius: 8px; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
-                .btn-icon:hover { color: white; background: rgba(255,255,255,0.08); }
-                .btn-icon-danger:hover { color: #ef4444; background: rgba(239, 68, 68, 0.1); }
-                
-                .mobile-file-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 1rem; padding: 1rem; transition: all 0.2s ease; }
-                .mobile-file-card:hover { border-color: rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); }
-                
-                .overflow-menu {
-                    position: absolute; right: 0; top: 100%; z-index: 50; background: #1e293b; border: 1px solid rgba(255,255,255,0.1); border-radius: 0.75rem; padding: 0.5rem; min-width: 140px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
-                }
-                .overflow-menu button {
-                    width: 100%; display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0.75rem; border: none; background: none; color: #cbd5e1; cursor: pointer; border-radius: 0.5rem; font-size: 0.85rem; font-weight: 500;
-                }
-                .overflow-menu button:hover { background: rgba(255,255,255,0.05); color: white; }
-            `}</style>
         </div>
     );
 };

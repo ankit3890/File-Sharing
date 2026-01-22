@@ -1,0 +1,149 @@
+/* Dashboard Layout Grid */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+}
+
+@media (max-width: 1024px) {
+    .dashboard-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard-grid {
+        gap: 0.75rem;
+    }
+    .welcome-title {
+        font-size: 1.5rem !important;
+    }
+    .attendance-btn {
+        width: 100%;
+        padding: 1rem 2rem !important;
+        font-size: 1rem !important;
+        border-radius: 1rem !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .dashboard-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Admin Queue & Cards */
+.admin-queue-container .section-title { font-size: 0.75rem; color: #64748b; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 800; }
+.admin-queue-container .empty-state { display: flex; align-items: center; gap: 0.6rem; color: #64748b; background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 0.75rem; border: 1px dashed rgba(255,255,255,0.05); font-size: 0.85rem; font-weight: 500; }
+.admin-queue-container .empty-state.success { color: #10b981; background: rgba(16, 185, 129, 0.03); border-color: rgba(16, 185, 129, 0.1); }
+
+.admin-queue-container .admin-list { display: flex; flex-direction: column; gap: 0.75rem; }
+.admin-queue-container .admin-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 1rem; border-radius: 0.75rem; transition: all 0.2s ease; }
+.admin-queue-container .mobile-admin-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 1.25rem; padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem; }
+.admin-queue-container .admin-card:hover { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.1); }
+.admin-queue-container .admin-card.alert-row { background: rgba(239, 68, 68, 0.05); border-color: rgba(239, 68, 68, 0.1); }
+
+.admin-queue-container .card-top { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.admin-queue-container .user-info { display: flex; align-items: center; gap: 0.75rem; }
+.admin-queue-container .avatar-mini { width: 32px; height: 32px; background: rgba(255,255,255,0.05); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #94a3b8; border: 1px solid rgba(255,255,255,0.1); }
+.admin-queue-container .user-name { font-weight: 700; color: #f1f5f9; font-size: 0.95rem; }
+.admin-queue-container .user-name.alert { color: #fca5a5; }
+.admin-queue-container .card-sub { font-size: 0.75rem; color: #64748b; font-weight: 500; }
+.admin-queue-container .card-sub.alert { color: #f87171; }
+
+.admin-queue-container .action-btns { display: flex; gap: 0.5rem; }
+.admin-queue-container .btn-approve, .admin-queue-container .btn-reject { padding: 0.4rem 1rem; border: none; border-radius: 0.75rem; cursor: pointer; font-size: 0.8rem; font-weight: 800; transition: all 0.2s; display: flex; align-items: center; justify-content: center; min-height: 32px; }
+.admin-queue-container .btn-approve { background: #10b981; color: white; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); }
+.admin-queue-container .btn-approve:hover { background: #059669; transform: translateY(-1px); box-shadow: 0 6px 16px rgba(16, 185, 129, 0.3); }
+.admin-queue-container .btn-reject { background: #ef4444; color: white; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2); }
+.admin-queue-container .btn-reject:hover { background: #dc2626; transform: translateY(-1px); box-shadow: 0 6px 16px rgba(239, 68, 68, 0.3); }
+
+.admin-queue-container .storage-value { font-size: 0.9rem; font-weight: 800; color: #ef4444; }
+.admin-queue-container .icon-box-alert { padding: 0.5rem; background: rgba(239, 68, 68, 0.1); border-radius: 0.5rem; color: #ef4444; }
+
+.admin-queue-container .file-name { font-weight: 600; font-size: 0.9rem; color: #f1f5f9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.admin-queue-container .file-sub-info { display: flex; gap: 0.75rem; margin-top: 2px; flex-wrap: wrap; }
+.admin-queue-container .meta-item { display: flex; align-items: center; gap: 0.3rem; font-size: 0.7rem; color: #64748b; font-weight: 500; }
+.admin-queue-container .meta-item.time { color: #3b82f6; }
+.admin-queue-container .file-size { font-size: 0.75rem; font-weight: 700; color: #94a3b8; }
+
+@media (max-width: 640px) {
+    .admin-queue-container .action-btns { width: 100%; flex-direction: column; gap: 0.75rem; margin-top: 0.5rem; }
+    .admin-queue-container .btn-approve, .admin-queue-container .btn-reject { width: 100%; height: 32px; justify-content: center; font-size: 0.75rem; border-radius: 0.5rem; }
+    .admin-queue-container .card-top { flex-direction: column; align-items: flex-start; }
+    .admin-queue-container .avatar-mini { display: flex; width: 40px; height: 40px; }
+    .admin-queue-container .user-name { font-size: 1.1rem; }
+    .admin-queue-container .card-sub { font-size: 0.85rem; }
+}
+
+@media (max-width: 480px) {
+   .admin-queue-container { padding: 1rem !important; }
+   .admin-queue-container .file-card { padding: 0.75rem !important; }
+}
+
+/* Recent Files Table */
+.table-header { padding: 0.75rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.05); display: grid; grid-template-columns: minmax(40px, auto) 1.5fr 1fr 1fr 0.8fr 1fr; gap: 1rem; color: #64748b; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; background: rgba(0,0,0,0.1); }
+.file-row { display: grid; grid-template-columns: minmax(40px, auto) 1.5fr 1fr 1fr 0.8fr 1fr; gap: 1rem; padding: 0.75rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.03); align-items: center; transition: background 0.2s; }
+.file-row:hover { background: rgba(255,255,255,0.02); }
+.file-name { font-weight: 600; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #f1f5f9; }
+.file-desc { font-size: 0.75rem; color: #64748b; margin-top: 2px; }
+.file-meta p { font-size: 0.85rem; color: #cbd5e1; margin: 0; }
+.uploader-name { font-size: 0.85rem; color: #cbd5e1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.badge-new { font-size: 0.6rem; background: #3b82f6; color: white; padding: 0.1rem 0.4rem; border-radius: 4px; font-weight: 800; letter-spacing: 0.025em; }
+.actions-cell { display: flex; gap: 0.1rem; justify-content: flex-end; }
+.btn-icon, .btn-icon-danger { background: none; border: none; color: #64748b; cursor: pointer; padding: 8px; border-radius: 8px; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+.btn-icon:hover { color: white; background: rgba(255,255,255,0.08); }
+.btn-icon-danger:hover { color: #ef4444; background: rgba(239, 68, 68, 0.1); }
+
+.mobile-file-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 1rem; padding: 1rem; transition: all 0.2s ease; }
+.mobile-file-card:hover { border-color: rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); }
+
+.overflow-menu {
+    position: absolute; right: 0; top: 100%; z-index: 50; background: #1e293b; border: 1px solid rgba(255,255,255,0.1); border-radius: 0.75rem; padding: 0.5rem; min-width: 140px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+}
+.overflow-menu button {
+    width: 100%; display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0.75rem; border: none; background: none; color: #cbd5e1; cursor: pointer; border-radius: 0.5rem; font-size: 0.85rem; font-weight: 500;
+}
+.overflow-menu button:hover { background: rgba(255,255,255,0.05); color: white; }
+
+/* Summary Card */
+.summary-card-inner {
+    padding: 1.25rem;
+    border-radius: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    flex: 1;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+.summary-card-header {
+    display: flex; 
+    justify-content: space-between; 
+    align-items: flex-start;
+}
+.summary-card-title {
+   color: #94a3b8; 
+   font-size: 0.8rem; 
+   font-weight: 600; 
+   text-transform: uppercase; 
+   letter-spacing: 0.025em;
+}
+.summary-card-icon {
+   padding: 0.4rem; 
+   border-radius: 0.5rem;
+}
+.summary-card-value {
+   font-size: 1.75rem; 
+   font-weight: bold; 
+   color: white; 
+   line-height: 1.2;
+}
+.summary-card-subtext {
+   font-size: 0.7rem; 
+   color: #64748b; 
+   font-weight: 500; 
+   margin-top: 2px;
+}

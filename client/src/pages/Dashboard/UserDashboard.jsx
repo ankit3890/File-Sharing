@@ -1,95 +1,84 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import api from '../../utils/api';
 import SummaryCard from '../../components/dashboard/SummaryCard';
+import SummaryCardSkeleton from '../../components/dashboard/SummaryCardSkeleton';
 import RecentFiles from '../../components/dashboard/RecentFiles';
-import AdminQueue from '../../components/dashboard/AdminQueue';
-import { Folder, HardDrive, FileText, CheckCircle, Clock, XCircle, Users, File } from 'lucide-react';
+import { Folder, HardDrive, FileText, CheckCircle, Clock, XCircle } from 'lucide-react';
+import './dashboard.css';
 
 const UserDashboard = () => {
     const { user } = useAuth();
-    const isAdmin = user?.role === 'admin';
+    const navigate = useNavigate();
     
     // User State
     const [summary, setSummary] = useState(null);
     const [recentFiles, setRecentFiles] = useState([]);
-    
-    // Admin State
-    const [adminSummary, setAdminSummary] = useState(null);
-    const [adminQueue, setAdminQueue] = useState(null);
-    
-    const [loading, setLoading] = useState(true);
+    const [summaryLoading, setSummaryLoading] = useState(true);
+    const [filesLoading, setFilesLoading] = useState(true);
 
-    const fetchDashboardData = async () => {
+    const fetchSummary = async () => {
         try {
-            // Always fetch User Data
-            const userPromises = [
-                api.get('/dashboard/user-summary'),
-                api.get('/dashboard/user-recent-files')
-            ];
-
-            // Conditionally fetch Admin Data
-            if (isAdmin) {
-                userPromises.push(api.get('/dashboard/admin-summary'));
-                userPromises.push(api.get('/dashboard/admin-queue'));
-            }
-
-            const results = await Promise.all(userPromises);
-            
-            // Unpack User Data
-            setSummary(results[0].data);
-            setRecentFiles(results[1].data);
-
-            // Unpack Admin Data
-            if (isAdmin) {
-                setAdminSummary(results[2].data);
-                setAdminQueue(results[3].data);
-            }
-
+            const res = await api.get('/dashboard/user-summary');
+            setSummary(res.data);
         } catch (error) {
-            console.error("Dashboard Load Error:", error);
+            console.error("Dashboard Summary Load Error:", error);
         } finally {
-            setLoading(false);
+            setSummaryLoading(false);
         }
     };
 
-    useEffect(() => {
-        fetchDashboardData();
-    }, [isAdmin]);
+    const fetchFiles = async () => {
+        try {
+            const res = await api.get('/dashboard/user-recent-files');
+            setRecentFiles(res.data);
+        } catch (error) {
+            console.error("Dashboard Files Load Error:", error);
+        } finally {
+            setFilesLoading(false);
+        }
+    };
 
-    if (loading) return <div className="p-8 text-center text-white">Loading Dashboard...</div>;
-    if (!summary) return <div className="p-8 text-center text-white">Failed to load data.</div>;
+    const fetchAll = () => {
+        fetchSummary();
+        fetchFiles();
+    };
+
+    useEffect(() => {
+        fetchAll();
+    }, []);
+
+    // Helper to render files skeleton
+    const renderFilesSkeleton = () => (
+         <div className="glass" style={{ padding: '1.5rem', borderRadius: '1rem', height: '500px' }}>
+            <div className="skeleton-line" style={{ width: '25%', marginBottom: '1.5rem' }} />
+            {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="skeleton-line" style={{ height: '50px', marginBottom: '1rem' }} />
+            ))}
+        </div>
+    );
 
     const getAttendanceIcon = () => {
+        if (!summary) return { icon: Clock, color: '#f59e0b' };
         const status = summary.attendance?.toLowerCase();
         if (status === 'approved') return { icon: CheckCircle, color: '#10b981' };
         if (status === 'rejected') return { icon: XCircle, color: '#ef4444' };
         return { icon: Clock, color: '#f59e0b' };
     };
 
-    const attStatus = getAttendanceIcon();
-    const storageColor = summary.storage.percent >= 90 ? '#ef4444' : summary.storage.percent >= 70 ? '#eab308' : '#ffffff';
-    
     const handleApplyAttendance = async () => {
         try {
             await api.post('/attendance/mark');
-            // Refresh dashboard to show 'Pending' immediately
-            fetchDashboardData();
+            fetchSummary(); // Refresh summary to show 'Pending' immediately
         } catch (error) {
             console.error('Attendance Apply Error', error);
             alert('Failed to apply for attendance. You may have already applied today.');
         }
     };
 
-    const displayAttendance = summary.attendance === 'Not Marked' 
-        ? 'Pending' 
-        : summary.attendance.charAt(0).toUpperCase() + summary.attendance.slice(1);
-
     const todayDate = new Date().toLocaleDateString('en-US', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
+        weekday: 'long', title: 'numeric', month: 'long', day: 'numeric'
     }).toUpperCase();
 
     return (
@@ -102,8 +91,15 @@ const UserDashboard = () => {
                 <p style={{ color: '#94a3b8' }}>Here’s what’s happening today.</p>
             </div>
 
-            {/* --- PROMINENT ATTENDANCE SECTION (User Only) --- */}
-            {!isAdmin && summary.attendance === 'Not Marked' && (
+            {/* --- PROMINENT ATTENDANCE SECTION --- */}
+            {/* Show skeleton or attendance CTA if loaded */}
+            {summaryLoading ? (
+                 <div className="glass" style={{ height: '200px', borderRadius: '1.5rem', padding: '2rem' }}>
+                     <div className="skeleton-line" style={{ width: '20%', margin: '0 auto 1.5rem' }} />
+                     <div className="skeleton-line" style={{ width: '40%', height: '50px', margin: '0 auto 1rem', borderRadius: '1.25rem' }} />
+                     <div className="skeleton-line" style={{ width: '30%', margin: '0 auto' }} />
+                 </div>
+            ) : summary && summary.attendance === 'Not Marked' && (
                 <div style={{ 
                     display: 'flex', 
                     flexDirection: 'column', 
@@ -173,147 +169,62 @@ const UserDashboard = () => {
                 </div>
             )}
 
-            {/* --- ADMIN SECTION --- */}
-            {isAdmin && adminSummary && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', paddingBottom: '2rem', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-                    <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#e2e8f0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <Users size={20} className="text-purple-400" /> System Overview (Admin)
-                    </h3>
-                    
-                    {/* Admin Stats Cards */}
-                    <div className="dashboard-grid">
-                        <SummaryCard 
-                            title="Total Users" 
-                            value={adminSummary.users} 
-                            subtext="Registered users"
-                            icon={Users} 
-                            color="#8b5cf6" 
-                            onClick={() => window.location.href = '/admin'}
-                        />
-                        <SummaryCard 
-                            title="Total Projects" 
-                            value={adminSummary.projects} 
-                            subtext="Active projects"
-                            icon={Folder} 
-                            color="#3b82f6" 
-                            onClick={() => window.location.href = '/projects'}
-                        />
-                        <SummaryCard 
-                            title="Total Files" 
-                            value={adminSummary.files} 
-                            subtext="Across all projects"
-                            icon={File} 
-                            color="#10b981" 
-                            onClick={() => window.location.href = '/projects'}
-                        />
-                        <SummaryCard 
-                            title="System Storage" 
-                            value={`${(adminSummary.storage / 1024 / 1024).toFixed(0)} MB`} 
-                            subtext="Used by all users"
-                            icon={HardDrive} 
-                            color="#f59e0b" 
-                            onClick={() => window.location.href = '/manage-space'}
-                        />
-                    </div>
+            {/* --- USER SECTION --- */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#e2e8f0' }}>My Workspace</h3>
 
-                    {/* Admin Action Queue */}
-                    {adminQueue && (
-                        <AdminQueue 
-                            pendingAttendance={adminQueue.pendingAttendance} 
-                            storageAlerts={adminQueue.storageAlerts}
-                            recentFiles={adminQueue.recentFiles}
-                            onRefresh={fetchDashboardData}
-                        />
+                {/* User Stats Cards */}
+                <div className="dashboard-grid">
+                    {summaryLoading ? (
+                        Array.from({ length: 4 }).map((_, i) => <SummaryCardSkeleton key={i} />)
+                    ) : summary ? (
+                        <>
+                            <SummaryCard 
+                                title="My Projects" 
+                                value={summary.projects} 
+                                subtext="Active projects"
+                                icon={Folder} 
+                                color="#8b5cf6" 
+                                onClick={() => navigate('/projects')}
+                            />
+                            <SummaryCard 
+                                title="Storage Used" 
+                                value={`${(summary.storage.used / 1024 / 1024).toFixed(0)} MB`} 
+                                subtext={`${summary.storage.percent}% of Limit`}
+                                icon={HardDrive} 
+                                color={summary.storage.percent >= 90 ? '#ef4444' : summary.storage.percent >= 70 ? '#eab308' : '#ffffff'} 
+                                onClick={() => navigate('/manage-space')}
+                            />
+                            <SummaryCard 
+                                title="My Files" 
+                                value={summary.files} 
+                                subtext="Total uploaded files"
+                                icon={FileText} 
+                                color="#6366f1" 
+                                onClick={() => {
+                                    const element = document.getElementById('recent-files-section');
+                                    if (element) element.scrollIntoView({ behavior: 'smooth' });
+                                }}
+                            />
+                            <SummaryCard 
+                                title="Attendance" 
+                                value={summary.attendance === 'Not Marked' ? 'Pending' : summary.attendance.charAt(0).toUpperCase() + summary.attendance.slice(1)} 
+                                subtext="Your daily attendance"
+                                icon={getAttendanceIcon().icon} 
+                                color={getAttendanceIcon().color} 
+                                onClick={() => navigate('/attendance')}
+                            />
+                        </>
+                    ) : <div className="p-4 text-red-400">Failed to load summary.</div>}
+                </div>
+
+                {/* Main Content Area */}
+                <div id="recent-files-section" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                    {filesLoading ? renderFilesSkeleton() : (
+                        <RecentFiles files={recentFiles} onRefresh={fetchAll} />
                     )}
                 </div>
-            )}
-
-            {/* --- USER SECTION --- */}
-            {!isAdmin && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                    <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#e2e8f0' }}>My Workspace</h3>
-
-                    {/* User Stats Cards */}
-                    <div className="dashboard-grid">
-                        <SummaryCard 
-                            title="My Projects" 
-                            value={summary.projects} 
-                            subtext="Active projects"
-                            icon={Folder} 
-                            color="#8b5cf6" 
-                            onClick={() => window.location.href = '/projects'}
-                        />
-                        <SummaryCard 
-                            title="Storage Used" 
-                            value={`${(summary.storage.used / 1024 / 1024).toFixed(0)} MB`} 
-                            subtext={`${summary.storage.percent}% of Limit`}
-                            icon={HardDrive} 
-                            color={storageColor} 
-                            onClick={() => window.location.href = '/manage-space'}
-                        />
-                        <SummaryCard 
-                            title="My Files" 
-                            value={summary.files} 
-                            subtext="Total uploaded files"
-                            icon={FileText} 
-                            color="#6366f1" 
-                            onClick={() => {
-                                // Scroll to recent files section
-                                const element = document.getElementById('recent-files-section');
-                                if (element) element.scrollIntoView({ behavior: 'smooth' });
-                            }}
-                        />
-                        <SummaryCard 
-                            title="Attendance" 
-                            value={displayAttendance} 
-                            subtext="Your daily attendance"
-                            icon={attStatus.icon} 
-                            color={attStatus.color} 
-                            onClick={() => window.location.href = '/attendance'}
-                        />
-                    </div>
-
-                    {/* Main Content Area */}
-                    <div id="recent-files-section" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-                        <RecentFiles files={recentFiles} onRefresh={fetchDashboardData} />
-                    </div>
-                </div>
-            )}
-            <style>{`
-                .dashboard-grid {
-                    display: grid;
-                    grid-template-columns: repeat(4, 1fr);
-                    gap: 1.5rem;
-                }
-
-                @media (max-width: 1024px) {
-                    .dashboard-grid {
-                        grid-template-columns: repeat(2, 1fr);
-                        gap: 1rem;
-                    }
-                }
-
-                @media (max-width: 768px) {
-                    .dashboard-grid {
-                        gap: 0.75rem;
-                    }
-                    .welcome-title {
-                        font-size: 1.5rem !important;
-                    }
-                    .attendance-btn {
-                        width: 100%;
-                        padding: 1rem 2rem !important;
-                        font-size: 1rem !important;
-                        border-radius: 1rem !important;
-                    }
-                }
-
-                @media (max-width: 480px) {
-                    .dashboard-grid {
-                        grid-template-columns: repeat(2, 1fr);
-                    }
-                }
-            `}</style>
+            </div>
         </div>
     );
 };

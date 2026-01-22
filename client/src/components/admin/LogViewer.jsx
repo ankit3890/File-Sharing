@@ -88,7 +88,7 @@ const LogViewer = () => {
 
     // Virtualization Setup
     const rowVirtualizer = useVirtualizer({
-        count: logs.length,
+        count: parentRef.current ? logs.length : 0,
         getScrollElement: () => parentRef.current,
         estimateSize: () => isMobile ? 160 : 60,
         overscan: 5,
@@ -166,7 +166,7 @@ const LogViewer = () => {
                 <div 
                     ref={parentRef} 
                     className="admin-scroll-area"
-                    style={{ height: logs.length > 0 ? '600px' : '200px' }}
+                    style={{ height: logs.length > 0 ? '600px' : 'auto', minHeight: '200px' }}
                 >
                     {!isMobile && (
                         <div className="admin-table-header log-header" style={{ position: 'sticky', top: 0, zIndex: 10, background: '#0f172a' }}>
@@ -179,7 +179,39 @@ const LogViewer = () => {
                     )}
 
                     {loading ? (
-                        <div style={{ padding: '2rem' }}><SkeletonLoader /></div>
+                        <div style={{ padding: '1rem' }}>
+                             {Array.from({ length: 8 }).map((_, i) => (
+                                isMobile ? (
+                                    <div key={i} className="admin-card mobile-log-card" style={{ marginBottom: '1rem' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                                            <div style={{ display: 'flex', gap: '1rem' }}>
+                                                <div className="skeleton-line" style={{ width: '32px', height: '32px', borderRadius: '50%' }} />
+                                                <div>
+                                                    <div className="skeleton-line" style={{ width: '100px', height: '14px', marginBottom: '0.5rem' }} />
+                                                    <div className="skeleton-line" style={{ width: '80px', height: '12px' }} />
+                                                </div>
+                                            </div>
+                                            <div className="skeleton-line" style={{ width: '60px', height: '20px', borderRadius: '0.5rem' }} />
+                                        </div>
+                                        <div className="skeleton-line" style={{ width: '100%', height: '18px', borderRadius: '0.4rem' }} />
+                                    </div>
+                                ) : (
+                                    <div key={i} className="admin-table-row log-row" style={{ borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
+                                        <div className="skeleton-line" style={{ width: '100px', height: '14px' }} />
+                                        <div className="skeleton-line" style={{ width: '80px', height: '20px', borderRadius: '0.4rem' }} />
+                                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                             <div className="skeleton-line" style={{ width: '16px', height: '16px', borderRadius: '50%' }} />
+                                             <div className="skeleton-line" style={{ width: '80px', height: '14px' }} />
+                                        </div>
+                                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                             <div className="skeleton-line" style={{ width: '16px', height: '16px' }} />
+                                             <div className="skeleton-line" style={{ width: '100px', height: '14px' }} />
+                                        </div>
+                                        <div className="skeleton-line" style={{ width: '90%', height: '14px' }} />
+                                    </div>
+                                )
+                             ))}
+                        </div>
                     ) : logs.length === 0 ? (
                         <div className="empty-state" style={{ padding: '4rem 2rem', textAlign: 'center', color: '#475569', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
                             <Info size={48} strokeWidth={1} style={{ opacity: 0.2 }} />

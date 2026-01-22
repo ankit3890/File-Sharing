@@ -78,7 +78,7 @@ const ResetPassword = () => {
                         </div>
                         <input
                             type="text"
-                            placeholder="Your Name (e.g. Ankit)"
+                            placeholder="Your Name (e.g. Alex )"
                             className="input-field"
                             style={{ paddingLeft: '3rem' }}
                             value={name}

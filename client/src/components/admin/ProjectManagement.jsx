@@ -52,7 +52,7 @@ const ProjectManagement = () => {
 
     // Virtualization Setup
     const rowVirtualizer = useVirtualizer({
-        count: projects.length,
+        count: parentRef.current ? projects.length : 0,
         getScrollElement: () => parentRef.current,
         estimateSize: () => isMobile ? 180 : 80,
         overscan: 5,
@@ -151,7 +151,7 @@ const ProjectManagement = () => {
                 <div 
                     ref={parentRef} 
                     className="admin-scroll-area"
-                    style={{ height: projects.length > 0 ? '550px' : '200px' }}
+                    style={{ height: projects.length > 0 ? '550px' : 'auto', minHeight: '200px' }}
                 >
                     {!isMobile && (
                         <div className="admin-table-header project-header" style={{ position: 'sticky', top: 0, zIndex: 10, background: '#0f172a' }}>
@@ -161,135 +161,168 @@ const ProjectManagement = () => {
                         </div>
                     )}
 
-                    {projects.length === 0 && !loading && (
+                    {loading && projects.length === 0 ? (
+                        <div style={{ padding: '1rem' }}>
+                            {Array.from({ length: 6 }).map((_, i) => (
+                                isMobile ? (
+                                    <div key={i} className="mobile-admin-card" style={{ marginBottom: '1rem' }}>
+                                         <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem', alignItems: 'center' }}>
+                                            <div className="skeleton-line" style={{ width: '40px', height: '40px', borderRadius: '0.5rem' }} />
+                                            <div style={{ flex: 1 }}>
+                                                <div className="skeleton-line" style={{ width: '50%', height: '18px', marginBottom: '0.5rem' }} />
+                                                <div className="skeleton-line" style={{ width: '30%', height: '14px' }} />
+                                            </div>
+                                         </div>
+                                         <div className="skeleton-line" style={{ width: '100%', height: '1px', marginBottom: '1rem' }} />
+                                         <div className="skeleton-line" style={{ width: '80%', height: '20px' }} />
+                                    </div>
+                                ) : (
+                                    <div key={i} className="admin-table-row project-row" style={{ borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
+                                        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                                            <div className="skeleton-line" style={{ width: '40px', height: '40px', borderRadius: '0.5rem' }} />
+                                            <div className="skeleton-line" style={{ width: '150px', height: '18px' }} />
+                                        </div>
+                                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                            <div className="skeleton-line" style={{ width: '60px', height: '24px', borderRadius: '0.5rem' }} />
+                                            <div className="skeleton-line" style={{ width: '60px', height: '24px', borderRadius: '0.5rem' }} />
+                                            <div className="skeleton-line" style={{ width: '60px', height: '24px', borderRadius: '0.5rem' }} />
+                                        </div>
+                                        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                                            <div className="skeleton-line" style={{ width: '32px', height: '32px', borderRadius: '8px' }} />
+                                        </div>
+                                    </div>
+                                )
+                            ))}
+                        </div>
+                    ) : projects.length === 0 ? (
                         <div className="empty-state" style={{ padding: '4rem 2rem', textAlign: 'center', color: '#475569', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
                             <Folder size={48} strokeWidth={1} style={{ opacity: 0.2 }} />
                             <p>No project repositories initialized in the system.</p>
                         </div>
-                    )}
-
-                    <div style={{ height: `${rowVirtualizer.getTotalSize()}px`, width: '100%', position: 'relative' }}>
-                        {rowVirtualizer.getVirtualItems().map(virtualRow => {
-                            const project = projects[virtualRow.index];
-
-                            if (isMobile) {
+                    ) : (
+                        <div style={{ height: `${rowVirtualizer.getTotalSize()}px`, width: '100%', position: 'relative' }}>
+                            {rowVirtualizer.getVirtualItems().map(virtualRow => {
+                                const project = projects[virtualRow.index];
+    
+                                if (isMobile) {
+                                    return (
+                                        <div 
+                                            key={project._id}
+                                            style={{
+                                                position: 'absolute', top: 0, left: 0, width: '100%',
+                                                height: `${virtualRow.size}px`,
+                                                transform: `translateY(${virtualRow.start}px)`,
+                                                padding: '0.5rem 1rem'
+                                            }}
+                                        >
+                                            <div className="mobile-admin-card">
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                                    <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                                                        <div className="avatar-box project">
+                                                            <Folder size={18} />
+                                                        </div>
+                                                        <div>
+                                                            <p className="entity-name">{project.name}</p>
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#64748b', fontSize: '0.75rem', marginTop: '0.2rem' }}>
+                                                                <Users size={12} /> {project.members?.length || 0} members
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div style={{ position: 'relative' }}>
+                                                        <button 
+                                                            onClick={() => setActiveMenu(activeMenu === project._id ? null : project._id)}
+                                                            className="icon-btn-ghost"
+                                                        >
+                                                            <MoreVertical size={20} />
+                                                        </button>
+                                                        <AnimatePresence>
+                                                            {activeMenu === project._id && (
+                                                                <motion.div 
+                                                                    initial={{ opacity: 0, scale: 0.95 }}
+                                                                    animate={{ opacity: 1, scale: 1 }}
+                                                                    exit={{ opacity: 0, scale: 0.95 }}
+                                                                    className="admin-overflow-menu"
+                                                                >
+                                                                    <button onClick={() => setSelectedProject(project)} className="action-item">
+                                                                        <UserPlus size={16} /> Manage Members
+                                                                    </button>
+                                                                    <div className="divider" />
+                                                                    <button onClick={() => handleDeleteClick(project._id)} className="delete-action">
+                                                                        <Trash2 size={16} /> Delete Project
+                                                                    </button>
+                                                                </motion.div>
+                                                            )}
+                                                        </AnimatePresence>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div className="member-bubbles-mobile">
+                                                    {project.members?.slice(0, 3).map(m => (
+                                                        <span key={m._id} className="mini-tag">
+                                                            {m.userId.split('@')[0]}
+                                                        </span>
+                                                    ))}
+                                                    {project.members?.length > 3 && (
+                                                        <span className="mini-tag count">+{project.members.length - 3} more</span>
+                                                    )}
+                                                    <button onClick={(e) => { e.stopPropagation(); setSelectedProject(project); }} className="add-member-mini">
+                                                        + Add
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                }
+    
                                 return (
                                     <div 
                                         key={project._id}
+                                        className="admin-table-row project-row"
                                         style={{
                                             position: 'absolute', top: 0, left: 0, width: '100%',
                                             height: `${virtualRow.size}px`,
                                             transform: `translateY(${virtualRow.start}px)`,
-                                            padding: '0.5rem 1rem'
+                                            alignItems: 'center'
                                         }}
                                     >
-                                        <div className="mobile-admin-card">
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                                <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-                                                    <div className="avatar-box project">
-                                                        <Folder size={18} />
-                                                    </div>
-                                                    <div>
-                                                        <p className="entity-name">{project.name}</p>
-                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#64748b', fontSize: '0.75rem', marginTop: '0.2rem' }}>
-                                                            <Users size={12} /> {project.members?.length || 0} members
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div style={{ position: 'relative' }}>
-                                                    <button 
-                                                        onClick={() => setActiveMenu(activeMenu === project._id ? null : project._id)}
-                                                        className="icon-btn-ghost"
-                                                    >
-                                                        <MoreVertical size={20} />
-                                                    </button>
-                                                    <AnimatePresence>
-                                                        {activeMenu === project._id && (
-                                                            <motion.div 
-                                                                initial={{ opacity: 0, scale: 0.95 }}
-                                                                animate={{ opacity: 1, scale: 1 }}
-                                                                exit={{ opacity: 0, scale: 0.95 }}
-                                                                className="admin-overflow-menu"
-                                                            >
-                                                                <button onClick={() => setSelectedProject(project)} className="action-item">
-                                                                    <UserPlus size={16} /> Manage Members
-                                                                </button>
-                                                                <div className="divider" />
-                                                                <button onClick={() => handleDeleteClick(project._id)} className="delete-action">
-                                                                    <Trash2 size={16} /> Delete Project
-                                                                </button>
-                                                            </motion.div>
-                                                        )}
-                                                    </AnimatePresence>
-                                                </div>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', minWidth: 0 }}>
+                                            <div className="avatar-box project">
+                                                <Folder size={20} />
                                             </div>
-                                            
-                                            <div className="member-bubbles-mobile">
-                                                {project.members?.slice(0, 3).map(m => (
-                                                    <span key={m._id} className="mini-tag">
-                                                        {m.userId.split('@')[0]}
-                                                    </span>
-                                                ))}
-                                                {project.members?.length > 3 && (
-                                                    <span className="mini-tag count">+{project.members.length - 3} more</span>
-                                                )}
-                                                <button onClick={(e) => { e.stopPropagation(); setSelectedProject(project); }} className="add-member-mini">
-                                                    + Add
-                                                </button>
-                                            </div>
+                                            <span className="entity-name">{project.name}</span>
+                                        </div>
+                                        
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', minWidth: 0 }}>
+                                            {project.members?.slice(0, 4).map(m => (
+                                                <div key={m._id} className="member-chip">
+                                                    <span>{m.userId.split('@')[0]}</span>
+                                                    {m.role === 'admin' ? (
+                                                        <Shield size={10} className="text-yellow-500" />
+                                                    ) : (
+                                                        <X size={10} className="remove-icon" onClick={() => handleRemoveMember(project._id, m._id)} />
+                                                    )}
+                                                </div>
+                                            ))}
+                                            {project.members?.length > 4 && (
+                                                <span style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 600 }}>
+                                                    +{project.members.length - 4} more
+                                                </span>
+                                            )}
+                                            <button onClick={(e) => { e.stopPropagation(); setSelectedProject(project); }} className="add-member-btn">
+                                                <UserPlus size={12} /> Members
+                                            </button>
+                                        </div>
+                                        
+                                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
+                                            <button onClick={() => handleDeleteClick(project._id)} className="icon-btn-danger" title="Delete Project">
+                                                <Trash2 size={18} />
+                                            </button>
                                         </div>
                                     </div>
                                 );
-                            }
-
-                            return (
-                                <div 
-                                    key={project._id}
-                                    className="admin-table-row project-row"
-                                    style={{
-                                        position: 'absolute', top: 0, left: 0, width: '100%',
-                                        height: `${virtualRow.size}px`,
-                                        transform: `translateY(${virtualRow.start}px)`,
-                                        alignItems: 'center'
-                                    }}
-                                >
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', minWidth: 0 }}>
-                                        <div className="avatar-box project">
-                                            <Folder size={20} />
-                                        </div>
-                                        <span className="entity-name">{project.name}</span>
-                                    </div>
-                                    
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', minWidth: 0 }}>
-                                        {project.members?.slice(0, 4).map(m => (
-                                            <div key={m._id} className="member-chip">
-                                                <span>{m.userId.split('@')[0]}</span>
-                                                {m.role === 'admin' ? (
-                                                    <Shield size={10} className="text-yellow-500" />
-                                                ) : (
-                                                    <X size={10} className="remove-icon" onClick={() => handleRemoveMember(project._id, m._id)} />
-                                                )}
-                                            </div>
-                                        ))}
-                                        {project.members?.length > 4 && (
-                                            <span style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 600 }}>
-                                                +{project.members.length - 4} more
-                                            </span>
-                                        )}
-                                        <button onClick={(e) => { e.stopPropagation(); setSelectedProject(project); }} className="add-member-btn">
-                                            <UserPlus size={12} /> Members
-                                        </button>
-                                    </div>
-                                    
-                                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
-                                        <button onClick={() => handleDeleteClick(project._id)} className="icon-btn-danger" title="Delete Project">
-                                            <Trash2 size={18} />
-                                        </button>
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
+                            })}
+                        </div>
+                    )}
                 </div>
             </div>
 
